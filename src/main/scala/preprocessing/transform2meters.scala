@@ -7,7 +7,7 @@ import utils.TransformSRID
 object transform2meters {
   def main(args:Array[String]):Unit = {
     val spark = SparkSession.builder
-      .appName("clean_data") //.master("local[*]")
+      .appName("transformData") //.master("local[*]")
       .getOrCreate()
 
     import spark.implicits._

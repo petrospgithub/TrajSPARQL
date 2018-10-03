@@ -33,7 +33,7 @@ object trajectoryConstruction {
 
     import spark.implicits._
 
-    val csvDF = spark.read.option("delimiter", ",").option("header", "true").csv(path)//.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    val csvDF = spark.read.option("delimiter", ",").option("header", "false").csv(path)//.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     val pointST = csvDF.map(input => {
       val ts = input.getAs[String](3)

@@ -1,7 +1,8 @@
 STIndexing source code github -> https://github.com/petrospgithub/STIndexing
 
 big data frameworks folder -> https://mega.nz/#!bg0WkIwS!bS4Wk3zQUFLTCvqs6z7lcjDOMLwbcjCR9oBCgZ520EU
-
+                           -> https://www.dropbox.com/s/k6xd6rscvj2v4uo/bigspatial_frameworks.tar.gz?dl=0
+                           
 mvn install:install-file \
 -Dfile=bigspatial_frameworks/geospark-0.8.2.jar \
 -DgroupId=org.datasyslab \
