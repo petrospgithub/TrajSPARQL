@@ -1,7 +1,7 @@
 package types
 
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, LineString}
-import di.thesis.indexing.types.PointST
+import di.thesis.indexing.types.{EnvelopeST, PointST}
 import distance.Distance
 
 import scala.collection.mutable.ArrayBuffer
@@ -48,7 +48,7 @@ case class MovingObject(id: Long, trajectory: Array[CPointST], rowId:Long) {
       }
     }
   }
-
+/*
   lazy val mbbST:MbbST= {
     val min_t = trajectory.head.getTimestamp
     val max_t = trajectory.last.getTimestamp
@@ -70,6 +70,32 @@ case class MovingObject(id: Long, trajectory: Array[CPointST], rowId:Long) {
     }
 
     val ret=MbbST(id, newMinX, newMaxX, newMinY, newMaxY, min_t, max_t)
+    ret.setGid(id)
+    //println(ret)
+    ret
+  }
+*/
+  lazy val mbbST:EnvelopeST= {
+    val min_t = trajectory.head.getTimestamp
+    val max_t = trajectory.last.getTimestamp
+
+    var i = 1
+
+    var newMinX = trajectory.head.getLongitude
+    var newMaxX = trajectory.head.getLongitude
+
+    var newMinY = trajectory.head.getLatitude
+    var newMaxY = trajectory.head.getLatitude
+
+    while (i < trajectory.length) {
+      newMinX = trajectory(i).getLongitude min newMinX
+      newMaxX = trajectory(i).getLongitude max newMaxX
+      newMinY = trajectory(i).getLatitude min newMinY
+      newMaxY = trajectory(i).getLatitude max newMaxY
+      i = i + 1
+    }
+
+    val ret=new EnvelopeST(newMinX, newMaxX, newMinY, newMaxY, min_t, max_t);
     ret.setGid(id)
     //println(ret)
     ret
@@ -105,7 +131,7 @@ case class MovingObject(id: Long, trajectory: Array[CPointST], rowId:Long) {
     //val coord:ArrayBuffer[Coordinate]=new ArrayBuffer[Coordinate]()
     var sum=0.0
     while(i<trajectory.length){
-      sum=sum+Distance.getHaversineDistance(
+      sum=sum+Distance.getEuclideanDistance(
         trajectory(i).getLatitude, trajectory(i).getLongitude,
         trajectory(i-1).getLatitude, trajectory(i-1).getLongitude
       )
@@ -119,10 +145,10 @@ case class MovingObject(id: Long, trajectory: Array[CPointST], rowId:Long) {
   }
 
   lazy val avg_speed:Double={
-    (Distance.getHaversineDistance(
+    (Distance.getEuclideanDistance(
       trajectory.head.latitude,trajectory.head.longitude,
       trajectory.last.latitude,trajectory.last.longitude)
-      / (trajectory.last.timestamp - trajectory.head.timestamp).toDouble)*1.943844492
+      / (trajectory.last.timestamp - trajectory.head.timestamp).toDouble) //*1.943844492
 
   }
 }

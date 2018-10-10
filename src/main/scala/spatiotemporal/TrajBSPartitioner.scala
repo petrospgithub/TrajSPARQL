@@ -1,26 +1,27 @@
 package spatiotemporal
 
+import di.thesis.indexing.types.EnvelopeST
 import org.apache.spark.sql.Dataset
 import types.{CellST, MbbST, MovingObject, Trange}
 
 class TrajBSPartitioner (traj_dataset: Dataset[MovingObject], sideLength:Double,maxCostPerPartition:Double, withExtent:Boolean, t_sideLength:Long){
 
-  val mbbst: MbbST = STGrid.getMinMax(traj_dataset = traj_dataset)
+  val mbbst: EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset)
 
   val numXCells: Int = {
-    val xCells = Math.ceil(math.abs(mbbst.maxx - mbbst.minx) / sideLength).toInt
-    val maxX = mbbst.minx + xCells*sideLength
-    Math.ceil(math.abs(maxX - mbbst.minx) / sideLength).toInt
+    val xCells = Math.ceil(math.abs(mbbst.getMaxX - mbbst.getMinX) / sideLength).toInt
+    val maxX = mbbst.getMinX + xCells*sideLength
+    Math.ceil(math.abs(maxX - mbbst.getMinX) / sideLength).toInt
   }
 
   val numYCells: Int = {
-    val yCells = Math.ceil(math.abs(mbbst.maxy - mbbst.miny) / sideLength).toInt
-    val maxY = mbbst.miny + yCells*sideLength
-    Math.ceil(math.abs(maxY - mbbst.miny) / sideLength).toInt
+    val yCells = Math.ceil(math.abs(mbbst.getMaxY - mbbst.getMinY) / sideLength).toInt
+    val maxY = mbbst.getMinY + yCells*sideLength
+    Math.ceil(math.abs(maxY - mbbst.getMinY) / sideLength).toInt
   }
 
   val temporalPartition: Int = {
-    Math.ceil((mbbst.maxt - mbbst.mint) / t_sideLength.toDouble).toInt
+    Math.ceil((mbbst.getMaxT - mbbst.getMinT) / t_sideLength.toDouble).toInt
   }
 
   val tRange: Array[Trange]= {
@@ -29,7 +30,7 @@ class TrajBSPartitioner (traj_dataset: Dataset[MovingObject], sideLength:Double,
     val tarr = new Array[Trange](temporalPartition)
 
     while (i < temporalPartition) {
-      tarr(i) = Trange(mbbst.mint + (i * t_sideLength), mbbst.mint + ((i + 1) * t_sideLength))
+      tarr(i) = Trange(mbbst.getMinT + (i * t_sideLength), mbbst.getMinT + ((i + 1) * t_sideLength))
       i = i + 1
     }
     tarr
@@ -38,7 +39,7 @@ class TrajBSPartitioner (traj_dataset: Dataset[MovingObject], sideLength:Double,
   val partitions: Array[CellST] = {
 
 
-    val arr:Array[(CellST,Int)] = STGrid.buildGrid(numXCells, numYCells, tRange, sideLength, sideLength, t_sideLength, mbbst.minx, mbbst.miny, mbbst.mint)
+    val arr:Array[(CellST,Int)] = STGrid.buildGrid(numXCells, numYCells, tRange, sideLength, sideLength, t_sideLength, mbbst.getMinX, mbbst.getMinY, mbbst.getMinT)
 
 
     arr.map(_._1)

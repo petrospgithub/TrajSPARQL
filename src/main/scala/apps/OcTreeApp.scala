@@ -1,17 +1,11 @@
 package apps
 
-import java.io._
-import java.util.Properties
-
 import di.thesis.indexing.octree.OctreePartitioning
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
-import utils.ArraySearch
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.storage.StorageLevel
-import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
+import org.apache.spark.sql.{Encoders, SparkSession}
+import spatiotemporal.STGrid
 import types._
-import org.apache.spark.sql.functions.max
 
 object OcTreeApp {
   def main(args:Array[String]):Unit={
@@ -52,19 +46,20 @@ object OcTreeApp {
 
     //traj_dataset.show()
 
-    val mbbst:MbbST = STGrid.getMinMax(traj_dataset = traj_dataset)
+    val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset)
 
     val broadcastBoundary=spark.sparkContext.broadcast(mbbst)
 
     //val count=traj_dataset.count()
+    val enveEncoder = Encoders.bean(classOf[EnvelopeST])
 
     val mbbSamplingList=traj_dataset.map(x=>{
       x.mbbST
-    }).sample(withReplacement = true, fraction).collect() //TODO check fraction
+    })(enveEncoder).sample(withReplacement = true, fraction).collect() //TODO check fraction
 
     import scala.collection.JavaConverters._
 
-    val octree=new OctreePartitioning(mbbSamplingList.toList.asInstanceOf[List[EnvelopeST]].asJava, mbbst, maxItemByNode, maxLevel)
+    val octree=new OctreePartitioning(mbbSamplingList.toList.asJava, mbbst, maxItemByNode, maxLevel)
 
     val list=octree.getLeadfNodeList.asScala
 

@@ -2,20 +2,12 @@ STIndexing source code github -> https://github.com/petrospgithub/STIndexing
 
 big data frameworks folder -> https://mega.nz/#!bg0WkIwS!bS4Wk3zQUFLTCvqs6z7lcjDOMLwbcjCR9oBCgZ520EU
                            -> https://www.dropbox.com/s/k6xd6rscvj2v4uo/bigspatial_frameworks.tar.gz?dl=0
+    
+mvn install:install-file -Dfile=<path>/STIndexing-jar-with-dependencies.jar -DgroupId=di.thesis -DartifactId=stindexing -Dversion=1.0 -Dpackaging=jar
                            
-mvn install:install-file \
--Dfile=bigspatial_frameworks/geospark-0.8.2.jar \
--DgroupId=org.datasyslab \
--DartifactId=geospark \
--Dversion=0.8.2 \
--Dpackaging=jar
+mvn install:install-file -Dfile=bigspatial_frameworks/geospark-0.8.2.jar -DgroupId=org.datasyslab -DartifactId=geospark -Dversion=0.8.2 -Dpackaging=jar
 
-mvn install:install-file \
--Dfile=bigspatial_frameworks/stark.jar \
--DgroupId=dbis \
--DartifactId=stark \
--Dversion=1.0 \
--Dpackaging=jar
+mvn install:install-file -Dfile=bigspatial_frameworks/stark.jar -DgroupId=dbis -DartifactId=stark -Dversion=1.0 -Dpackaging=jar
 
 STIndexing source code github ->
 

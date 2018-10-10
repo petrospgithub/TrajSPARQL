@@ -1,5 +1,6 @@
 package spatiotemporal
 
+import di.thesis.indexing.types.EnvelopeST
 import org.apache.spark.sql.Dataset
 import types.{CellST, MbbST, MovingObject, Trange}
 
@@ -7,10 +8,10 @@ class TrajGridPartitioner(traj_dataset: Dataset[MovingObject], partitionsPerSpat
 
   val numPartitions: Int = partitionsPerSpatialDimension*temporalPartition
 
-  val mbbst: MbbST = STGrid.getMinMax(traj_dataset = traj_dataset)
-  val xLength: Double = math.abs(mbbst.maxx - mbbst.minx) / partitionsPerSpatialDimension
-  val yLength: Double = math.abs(mbbst.maxy - mbbst.miny) / partitionsPerSpatialDimension
-  val tLength: Long = math.abs(mbbst.maxt - mbbst.mint) / temporalPartition+1
+  val mbbst: EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset)
+  val xLength: Double = math.abs(mbbst.getMaxX - mbbst.getMinX) / partitionsPerSpatialDimension
+  val yLength: Double = math.abs(mbbst.getMaxY - mbbst.getMinY) / partitionsPerSpatialDimension
+  val tLength: Long = math.abs(mbbst.getMaxT - mbbst.getMaxT) / temporalPartition+1
 
   val partitions: Array[CellST] = {
 
@@ -18,11 +19,11 @@ class TrajGridPartitioner(traj_dataset: Dataset[MovingObject], partitionsPerSpat
     val tarr=new Array[Trange](temporalPartition)
 
     while (i<temporalPartition) {
-      tarr(i)=Trange(mbbst.mint+(i*tLength),mbbst.mint+((i+1)*tLength))
+      tarr(i)=Trange(mbbst.getMinT+(i*tLength),mbbst.getMinT+((i+1)*tLength))
         i=i+1
     }
 
-    val arr:Array[(CellST,Int)] = STGrid.buildGrid(partitionsPerSpatialDimension, partitionsPerSpatialDimension, tarr, xLength, yLength, tLength, mbbst.minx, mbbst.miny, mbbst.mint)
+    val arr:Array[(CellST,Int)] = STGrid.buildGrid(partitionsPerSpatialDimension, partitionsPerSpatialDimension, tarr, xLength, yLength, tLength, mbbst.getMinX, mbbst.getMinY, mbbst.getMinT)
 
 
     arr.map(_._1)

@@ -1,13 +1,10 @@
 package apps
 
-import java.io.{FileInputStream, InputStream}
-import java.util.Properties
-
-import di.thesis.indexing.types.PointST
+import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
 import org.apache.spark.sql.SparkSession
 import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
-import types.{MbbST, MovingObject, Partitioner}
+import types.{MovingObject, Partitioner}
 import utils.ArraySearch
 
 object TrajBSP {
@@ -35,7 +32,7 @@ object TrajBSP {
   
         val prop = spark.sparkContext.getConf
         val output = prop.get("spark.output")
-        val file_output = prop.get("spark.filetype")
+       // val file_output = prop.get("spark.filetype")
 
         val sideLength = prop.get("spark.sidelength").toDouble
 
@@ -47,12 +44,12 @@ object TrajBSP {
 
     import spark.implicits._
 
-    spark.conf.set("spark.sql.orc.impl", "native")
+    //spark.conf.set("spark.sql.orc.impl", "native")
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
     val traj_dataset=spark.read.parquet(path).as[MovingObject]
 
-    val mbbst: MbbST = STGrid.getMinMax(traj_dataset = traj_dataset)
+    val mbbst: EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset)
 
     val broadcastBoundary = spark.sparkContext.broadcast(mbbst)
 

@@ -2,8 +2,13 @@ package index
 
 import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
+import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.serializers.JavaSerializer
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.{EnvelopeST, PointST}
+import org.apache.thrift.TSerializer
+import org.apache.thrift.protocol.TBinaryProtocol
 import spatial.partition.MBBindexST
 import types.{MbbST, MovingObject, Partitioner}
 
@@ -12,11 +17,12 @@ object SpatioTemporalIndex {
     try {
       val row = it.head
       val rtree3D: STRtree3D=new STRtree3D(nodeCapacity:Int)
+
       rtree3D.setDatasetMBB(datasetMBB)
 
-      val envelope=row.mbbST
+      val envelope:EnvelopeST=row.mbbST
       //val envelope = new EnvelopeST(boundary.getMinX, boundary.getMaxX, boundary.getMinY, boundary.getMaxY, boundary.getMinT, boundary.getMaxT)
-      envelope.setGid(row.id)
+      envelope.setGid(row.rowId)
 
       rtree3D.insert(envelope)
       var minX = envelope.getMinX
@@ -36,9 +42,9 @@ object SpatioTemporalIndex {
 
       while (i<it.length) {
         val row = it(i)
-        val envelope=row.mbbST
+        val envelope:EnvelopeST=row.mbbST
         //val envelope = new EnvelopeST(boundary.minx, boundary.maxx, boundary.miny, boundary.maxy, boundary.mint, boundary.maxt)
-        envelope.setGid(row.id)
+        envelope.setGid(row.rowId)
 
         rtree3D.insert(envelope)
 
@@ -68,27 +74,20 @@ object SpatioTemporalIndex {
 
       rtree3D.build()
       /*******************************/
+
+      import org.nustaq.serialization.FSTConfiguration
+
+      val conf = FSTConfiguration.createDefaultConfiguration
+
+      val yourBytes: Array[Byte] = conf.asByteArray(rtree3D)
+
       val bos: ByteArrayOutputStream = new ByteArrayOutputStream
-      val out = new ObjectOutputStream(bos)
 
-      out.writeObject(rtree3D)
-      out.flush()
-
-      val yourBytes: Array[Byte] = bos.toByteArray
-/*******************************/
       /*******************************/
-      //val bos2: ByteArrayOutputStream = new ByteArrayOutputStream
-      //val out2 = new ObjectOutputStream(bos2)
-      val temp=MbbST(row.pid,minX,maxX,minY,maxY,minT,maxT)
-      //println(minX+"\t"+maxX+"\t"+minY+"\t"+maxY+"\t"+minT+"\t"+maxT)
-      //println(temp.mywkt())
-      //println(temp)
-      //println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+      /*******************************/
 
-      //System.exit(0)
-      //out2.writeObject(temp)
-     // out2.flush()
-      //val envBytes: Array[Byte] = bos2.toByteArray
+      val temp=MbbST(row.pid,minX,maxX,minY,maxY,minT,maxT)
+
       /*******************************/
       Iterator(MBBindexST(row.pid, temp, yourBytes))
 

@@ -1,14 +1,14 @@
 package spatiotemporal
 
-import di.thesis.indexing.types.PointST
+import di.thesis.indexing.types.{EnvelopeST, PointST}
 import org.apache.spark.sql.{Dataset, Row}
 import types._
 import org.apache.spark.sql.functions._
-import utils.{ArraySearch}
+import utils.ArraySearch
 
 object TrajectoryHistogram {
 
-  def getCellId(pointST: PointST, mbbST: MbbST, xLength: Double, yLength:Double, numXCells: Int): Int = {
+  def getCellId(pointST: PointST, mbbST: EnvelopeST, xLength: Double, yLength:Double, numXCells: Int): Int = {
     /*
     /* TODO an xreiazetai to require! */
     require(pointST.longitude >= mbbST.minx && pointST.longitude <= mbbST.maxx ||
@@ -17,13 +17,13 @@ object TrajectoryHistogram {
       , s"(${pointST.longitude},${pointST.latitude},${pointST.timestamp}) out of range!")
 */
 
-    val x = math.floor(math.abs(pointST.getLongitude - mbbST.minx) / xLength).toInt
-    val y = math.floor(math.abs(pointST.getLatitude - mbbST.miny) / yLength).toInt
+    val x = math.floor(math.abs(pointST.getLongitude - mbbST.getMinX) / xLength).toInt
+    val y = math.floor(math.abs(pointST.getLatitude - mbbST.getMinY) / yLength).toInt
     //val t = math.floor(math.abs(pointST.getTimestamp - mbbST.mint) / tLength).toInt
 
     val cellId = y * numXCells + x
 
-	println(cellId)
+	//println(cellId)
 
     cellId
   }

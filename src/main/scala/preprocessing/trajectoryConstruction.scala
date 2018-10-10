@@ -82,7 +82,7 @@ object trajectoryConstruction {
 
     @transient val rowNum = Window.partitionBy('id).orderBy('trajectory.getField("timestamp"))
 
-    traj.select('_1.alias("id"), 'trajectory).filter(size('trajectory)>1).withColumn("rowId", row_number() over(rowNum) ).write.mode("overwrite").parquet("trajectories_"+output)
+    traj.select('_1.alias("id"), 'trajectory).filter(size('trajectory)>1).withColumn("rowId", monotonically_increasing_id() ).write.mode("overwrite").parquet("trajectories_"+output)
 
     spark.close()
   }

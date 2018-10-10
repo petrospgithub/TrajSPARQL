@@ -1,27 +1,33 @@
 package spatiotemporal
 
-import org.apache.spark.sql.Dataset
+import di.thesis.indexing.types.EnvelopeST
+import org.apache.spark.sql.{Dataset, Encoders}
 import types._
 
 object STGrid {
 
-  def getMinMax(traj_dataset: Dataset[MovingObject]): MbbST = {
+  def getMinMax(traj_dataset: Dataset[MovingObject]): EnvelopeST = {
 
-    import traj_dataset.sparkSession.implicits._
+    //import traj_dataset.sparkSession.implicits._
+
+    val enveEncoder = Encoders.kryo(classOf[EnvelopeST])
 
     traj_dataset.map(row => {
       row.mbbST
-    }).reduce { (oldMM, newMM) =>
-      val newMinX = oldMM.minx min newMM.minx
-      val newMaxX = oldMM.maxx max newMM.maxx
+    })(enveEncoder).reduce { (oldMM, newMM) =>
+      val newMinX = Math.min(oldMM.getMinX, newMM.getMinX)
+      val newMaxX = Math.max(oldMM.getMaxX, newMM.getMaxX)
 
-      val newMinY = oldMM.miny min newMM.miny
-      val newMaxY = oldMM.maxy max newMM.maxy
+      val newMinY = Math.min(oldMM.getMinY, newMM.getMinY)
+      val newMaxY = Math.max(oldMM.getMaxY, newMM.getMaxY)
 
-      val newMinT = oldMM.mint min newMM.mint
-      val newMaxT = oldMM.maxt max newMM.maxt
+      val newMinT =Math.min(oldMM.getMinT, newMM.getMinT)
+      val newMaxT = Math.max(oldMM.getMaxT, newMM.getMaxT)
 
-      MbbST(-1,newMinX, newMaxX, newMinY, newMaxY, newMinT, newMaxT)
+      val env=new EnvelopeST(newMinX, newMaxX, newMinY, newMaxY, newMinT, newMaxT)
+      env.setGid(-1)
+
+      env
     }
   }
   def getCellBounds(id: Int, xCells: Int, tarr: Array[Trange],xLength: Double, yLength: Double, tLength: Long, minX: Double, minY: Double, minT: Long): Array[MbbST] = {

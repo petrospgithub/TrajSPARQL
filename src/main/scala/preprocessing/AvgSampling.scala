@@ -40,12 +40,12 @@ object AvgSampling {
     })//.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     import org.apache.spark.sql.expressions.Window
-    val windowSpec = Window.partitionBy('id).orderBy('timestamp)
+    @transient val windowSpec = Window.partitionBy('id).orderBy('timestamp)
 
     val sampling=pointST.withColumn("diff", 'timestamp - (lag('timestamp, 1) over windowSpec) ).select('diff).persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     sampling.foreach(row=>{
-      None
+
     })
 
     pointST.unpersist()

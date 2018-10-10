@@ -92,7 +92,6 @@ object TrajectorySTPartition {
     val broadmbbST = spark.sparkContext.broadcast(partitioner.mbbst)
     val broadGrid = spark.sparkContext.broadcast(partitioner.partitions)
     val broadcastBoundary=spark.sparkContext.broadcast(partitioner.mbbst)
-    //val broadnumXcells = spark.sparkContext.broadcast(partitioner)
 
     /*
         partitioner.partitions.foreach(f=>{
