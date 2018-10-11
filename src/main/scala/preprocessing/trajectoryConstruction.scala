@@ -59,13 +59,13 @@ object trajectoryConstruction {
       partition.map(row=>{
 
         if (row.isNullAt(4)) {
-          (row.getAs[Long](0), row.getAs[Double](1),row.getAs[Double](2), row.getAs[Long](3), traj_id)
+          (row.getAs[Long](0), row.getAs[Double](1),row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
         } else {
           if (row.getAs[Long](4) <= broadcastSplit.value) {
-            (row.getAs[Long](0), row.getAs[Double](1),row.getAs[Double](2), row.getAs[Long](3), traj_id)
+            (row.getAs[Long](0), row.getAs[Double](1),row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
           } else {
             traj_id=traj_id+1
-            (row.getAs[Long](0), row.getAs[Double](1),row.getAs[Double](2), row.getAs[Long](3), traj_id)
+            (row.getAs[Long](0), row.getAs[Double](1),row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
           }
         }
       })
@@ -80,7 +80,7 @@ object trajectoryConstruction {
 
 //    traj.printSchema()
 
-    @transient val rowNum = Window.partitionBy('id).orderBy('trajectory.getField("timestamp"))
+   // @transient val rowNum = Window.partitionBy('id).orderBy('trajectory.getField("timestamp"))
 
     traj.select('_1.alias("id"), 'trajectory).filter(size('trajectory)>1).withColumn("rowId", monotonically_increasing_id() ).write.mode("overwrite").parquet("trajectories_"+output)
 
