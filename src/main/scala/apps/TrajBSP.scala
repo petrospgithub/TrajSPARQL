@@ -2,9 +2,9 @@ package apps
 
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{AnalysisException, Dataset, SparkSession}
 import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
-import types.{MovingObject, Partitioner}
+import types._
 import utils.ArraySearch
 
 object TrajBSP {
@@ -47,13 +47,17 @@ object TrajBSP {
     //spark.conf.set("spark.sql.orc.impl", "native")
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
-    val traj_dataset=spark.read.parquet(path).as[MovingObject]
+    val traj_dataset= try {
+      spark.read.parquet(path).as[Trajectory]
+    } catch {
+      case _:AnalysisException=> spark.read.parquet(path).as[Segment]
+    }
 
-    val mbbst: EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset)
+    val mbbst: EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])
 
     val broadcastBoundary = spark.sparkContext.broadcast(mbbst)
 
-    val partitioner = new TrajBSPartitioner(traj_dataset = traj_dataset, maxCostPerPartition = 1, sideLength = sideLength, withExtent = false, t_sideLength = t_sideLength)
+    val partitioner = new TrajBSPartitioner(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]], maxCostPerPartition = 1, sideLength = sideLength, withExtent = false, t_sideLength = t_sideLength)
 
     val broadsideLength = spark.sparkContext.broadcast(sideLength)
     val broadmbbST = spark.sparkContext.broadcast(partitioner.mbbst)
@@ -70,7 +74,13 @@ object TrajBSP {
         val target = ArraySearch.binarySearchIterative(spatial, pointST.getTimestamp)
         val pid = "" + cellId + target //.replace("-", "")
 
-        Partitioner(mo.id, mo.trajectory, mo.rowId, pid.hashCode)
+      mo match {
+        case _: MovingObject =>
+          TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, pid.hashCode)
+
+        case _: Segment =>
+          SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId, pid.hashCode)
+      }
 
     })
 
@@ -80,7 +90,7 @@ object TrajBSP {
 
     val distinct_partitions=partitions_counter.distinct().count()
 
-    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[Partitioner]
+    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[TrajectoryPartitioner]
 
     val partitionMBBDF = traj_repart.mapPartitions(it => {
       SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)

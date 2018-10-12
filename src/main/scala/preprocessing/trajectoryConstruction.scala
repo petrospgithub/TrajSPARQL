@@ -84,6 +84,8 @@ object trajectoryConstruction {
 
     traj.select('_1.alias("id"), 'trajectory).filter(size('trajectory)>1).withColumn("rowId", monotonically_increasing_id() ).write.mode("overwrite").parquet("trajectories_"+output)
 
+
+
     spark.close()
   }
 }

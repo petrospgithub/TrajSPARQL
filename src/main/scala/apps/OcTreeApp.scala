@@ -3,7 +3,7 @@ package apps
 import di.thesis.indexing.octree.OctreePartitioning
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
-import org.apache.spark.sql.{Encoders, SparkSession}
+import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
 import spatiotemporal.STGrid
 import types._
 
@@ -37,20 +37,20 @@ object OcTreeApp {
     val maxLevel=prop.get("spark.maxlevel").toInt
 
     val rtree_nodeCapacity=prop.get("spark.localindex_nodecapacity").toInt
-  /*  */
     import spark.implicits._
 
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
-    val traj_dataset=spark.read.parquet(path).as[MovingObject]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    val traj_dataset= try {
+      spark.read.parquet(path).as[Trajectory]
+    } catch {
+      case _:AnalysisException=> spark.read.parquet(path).as[Segment]
+    }
 
-    //traj_dataset.show()
-
-    val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset)
+    val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])
 
     val broadcastBoundary=spark.sparkContext.broadcast(mbbst)
 
-    //val count=traj_dataset.count()
     val enveEncoder = Encoders.bean(classOf[EnvelopeST])
 
     val mbbSamplingList=traj_dataset.map(x=>{
@@ -76,13 +76,13 @@ object OcTreeApp {
           )
         })
         */
-
+/*
     list.foreach(x=>{
       x.setGid(i)
       //println(x.wkt())
       i=i+1
     })
-
+*/
     val broadcastLeafs=spark.sparkContext.broadcast(list)
 
     val repartition = traj_dataset.map(mo => {
@@ -102,37 +102,29 @@ object OcTreeApp {
         i=i+1
       }
 
-      Partitioner(mo.id, mo.trajectory, mo.rowId, partition_id)
-    })//.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      mo match {
+        case _: MovingObject =>
+          TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, partition_id)
 
-    //traj_dataset.foreach(f=>None)
-    //traj_dataset.unpersist()
+        case _: Segment =>
+          SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId, partition_id)
+      }
 
+    })
 
     val partitions_counter = repartition.groupBy('pid).count()
     val distinct_partitions=partitions_counter.select('pid).distinct().count()
-
-    //partitions_counter.show()
-   // println(distinct_partitions)
-    //partitions_counter.agg(max('count)).show()
     
     partitions_counter.write.csv("octree_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
-    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
 
-    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[Partitioner]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[TrajectoryPartitioner]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-   // traj_repart.foreach(f=>None)
-
-  //  repartition.unpersist()
 
     val partitionMBBDF = traj_repart.mapPartitions(it => {
       SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-    })//.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    })
 
-    //partitionMBBDF.foreach(f=>None)
-    //traj_repart.unpersist()
-
-	
+    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
     partitionMBBDF.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_" + output + "_parquet")
   
 

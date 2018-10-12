@@ -1,6 +1,10 @@
 package types
 
-case class Partitioner(id: Long, trajectory: Array[CPointST], rowId:Long, pid:Long) {
+trait Partitioner {
+  def id: Long
+  def trajectory: Array[CPointST]
+  def rowId:Long
+  def pid:Long
 
   lazy val mbbST:MbbST= {
     val min_t = trajectory.head.getTimestamp
@@ -27,5 +31,4 @@ case class Partitioner(id: Long, trajectory: Array[CPointST], rowId:Long, pid:Lo
     //println(ret)
     ret
   }
-
 }

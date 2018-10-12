@@ -2,7 +2,7 @@ package preprocessing
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
-import types.MovingObject
+import types.{MovingObject, Trajectory}
 //todo add real trajectory length not mbb
 
 
@@ -34,7 +34,7 @@ object TrajStats {
 
     import spark.implicits._
 
-    val traj_dataset=spark.read.parquet(path).as[MovingObject]
+    val traj_dataset=spark.read.parquet(path).as[Trajectory]
 
     traj_dataset.map(mo => {
       Stats(mo.length, mo.duration,mo.sampling, mo.trajectory.length, mo.avg_speed)

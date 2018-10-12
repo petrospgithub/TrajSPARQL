@@ -9,7 +9,7 @@ import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.sql.SparkSession
 import org.datasyslab.geospark.enums.GridType
 import org.datasyslab.geospark.spatialRDD.SpatialDF
-import types.{MovingObject, MovingSpatial}
+import types.{MovingObject, MovingSpatial, Trajectory}
 
 
 object SpatialTrajectoryPartition {
@@ -73,7 +73,7 @@ object SpatialTrajectoryPartition {
 
     import spark.implicits._
 
-    val traj_dataset=spark.read.parquet(path).as[MovingObject]
+    val traj_dataset=spark.read.parquet(path).as[Trajectory]
 
     val moving_spatial = traj_dataset.map(row => {
       val input = row.trajectory

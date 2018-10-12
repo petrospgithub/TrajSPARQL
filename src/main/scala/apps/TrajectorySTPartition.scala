@@ -2,7 +2,7 @@ package apps
 
 import di.thesis.indexing.types.PointST
 import index.SpatioTemporalIndex
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{AnalysisException, Dataset, SparkSession}
 import spatiotemporal.TrajGridPartitioner
 import spatiotemporal.TrajectoryHistogram.getCellId
 import types._
@@ -61,29 +61,14 @@ object TrajectorySTPartition {
     import spark.implicits._
 
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
-/*
-    val jdbcDF = args(0) match {
-      case "postgres" => spark.read
-        .format("jdbc")
-        .option("driver", "org.postgresql.Driver")
-        .option("url", host)
-        .option("dbtable", dbtable)
-        .option("user", user)
-        .option("password", pass)
-        .load()
 
-      case "csv" =>
-        val file: String = path
-        spark.read.format("csv").option("header", "true").load(file)
+    val traj_dataset= try {
+      spark.read.parquet(path).as[Trajectory]
+    } catch {
+      case _:AnalysisException=> spark.read.parquet(path).as[Segment]
     }
-*/
-    //jdbcDF.show()
 
-    val traj_dataset=spark.read.parquet(path).as[MovingObject]
-
-    /*TODO to with extend den fainetai xrhsimo ara mallon paei gia false monima*/
-
-    val partitioner = new TrajGridPartitioner(traj_dataset = traj_dataset, partitionsPerSpatialDimension = partitionsPerDimension, temporalPartition = temporalPartition, false)
+    val partitioner = new TrajGridPartitioner(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]], partitionsPerSpatialDimension = partitionsPerDimension, temporalPartition = temporalPartition, false)
 
     val broadXlength = spark.sparkContext.broadcast(partitioner.xLength)
     val broadYlength = spark.sparkContext.broadcast(partitioner.yLength)
@@ -99,12 +84,9 @@ object TrajectorySTPartition {
         })
     */
 
-    //TODO mhpws allaksoume kai dialegei to box pou pernaei apo perissotera
-
     val repartition = traj_dataset.map(mo => {
       val pointST: PointST = mo.getMean()
 
-      //val extent = MbbST(pointST.getLongitude, pointST.getLongitude, pointST.getLatitude, pointST.getLatitude, pointST.getTimestamp, pointST.getTimestamp)
       val cellId = getCellId(pointST,
         broadmbbST.value, broadXlength.value,
         broadYlength.value, broadcastnumXCell.value)
@@ -113,15 +95,23 @@ object TrajectorySTPartition {
 
       val target = ArraySearch.binarySearchIterative(spatial, pointST.getTimestamp)
 //      Partitioner(("" + cellId + target).replace("-", "").toInt, mo.id, mo.trajectory)
-      Partitioner(mo.id, mo.trajectory, mo.rowId, ("" + cellId + target).replace("-", "").toInt)
-  
+      TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, ("" + cellId + target).replace("-", "").toInt) //todo allagh edw!!!
+      val pid = "" + cellId + target //.replace("-", "")
+
+      mo match {
+        case _: MovingObject =>
+          TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, pid.hashCode)
+
+        case _: Segment =>
+          SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId, pid.hashCode)
+      }
   })
 
     //repartition.foreach(f=>println(f+" "+f.trajectory))
 
     val partitions = repartition.select($"pid").distinct().count()
 
-    val traj_repart = repartition.repartition(partitions.toInt, $"pid").as[Partitioner]//.drop('pid).as[MovingObject]
+    val traj_repart = repartition.repartition(partitions.toInt, $"pid").as[TrajectoryPartitioner]//.drop('pid).as[MovingObject]
 
     val mbbrdd=traj_repart.rdd.mapPartitions(it=>{
       SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)

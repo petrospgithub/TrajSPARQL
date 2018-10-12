@@ -50,9 +50,6 @@ object SpatialIndex {
         val boundary = geom.getEnvelopeInternal
 
         val envelope = new GidEnvelope(boundary)
-//todo handle null pointer exception
-        //envelope.init(boundary)
-        //envelope.setGid(row.getAs[Int](row.fieldIndex("gid")))
 
         try {
           envelope.setGid(row.getAs[Int](row.fieldIndex("gid")).asInstanceOf[Int])

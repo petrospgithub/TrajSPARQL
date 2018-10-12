@@ -1,16 +1,11 @@
 package index
 
-import java.io.{ByteArrayOutputStream, ObjectOutputStream}
+import java.io.ByteArrayOutputStream
 
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.Output
-import com.esotericsoftware.kryo.serializers.JavaSerializer
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
-import di.thesis.indexing.types.{EnvelopeST, PointST}
-import org.apache.thrift.TSerializer
-import org.apache.thrift.protocol.TBinaryProtocol
+import di.thesis.indexing.types.EnvelopeST
 import spatial.partition.MBBindexST
-import types.{MbbST, MovingObject, Partitioner}
+import types.{MbbST, Partitioner}
 
 object SpatioTemporalIndex {
   def rtree(it: Array[Partitioner], datasetMBB: EnvelopeST, nodeCapacity:Int): Iterator[MBBindexST] = {
@@ -21,7 +16,6 @@ object SpatioTemporalIndex {
       rtree3D.setDatasetMBB(datasetMBB)
 
       val envelope:EnvelopeST=row.mbbST
-      //val envelope = new EnvelopeST(boundary.getMinX, boundary.getMaxX, boundary.getMinY, boundary.getMaxY, boundary.getMinT, boundary.getMaxT)
       envelope.setGid(row.rowId)
 
       rtree3D.insert(envelope)
@@ -34,16 +28,11 @@ object SpatioTemporalIndex {
       var minT = envelope.getMinT
       var maxT = envelope.getMaxT
 
-      //println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-      //println(envelope)
-      //println(minX+"\t"+maxX+"\t"+minY+"\t"+maxY+"\t"+minT+"\t"+maxT)
-
       var i=0
 
       while (i<it.length) {
         val row = it(i)
         val envelope:EnvelopeST=row.mbbST
-        //val envelope = new EnvelopeST(boundary.minx, boundary.maxx, boundary.miny, boundary.maxy, boundary.mint, boundary.maxt)
         envelope.setGid(row.rowId)
 
         rtree3D.insert(envelope)
