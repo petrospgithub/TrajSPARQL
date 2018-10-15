@@ -94,7 +94,7 @@ object TrajectorySTPartition {
       val spatial = broadGrid.value.filter(_.id == cellId)
 
       val target = ArraySearch.binarySearchIterative(spatial, pointST.getTimestamp)
-//      Partitioner(("" + cellId + target).replace("-", "").toInt, mo.id, mo.trajectory)
+//      types.Partitioner(("" + cellId + target).replace("-", "").toInt, mo.id, mo.trajectory)
       TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, ("" + cellId + target).replace("-", "").toInt) //todo allagh edw!!!
       val pid = "" + cellId + target //.replace("-", "")
 
@@ -111,7 +111,7 @@ object TrajectorySTPartition {
 
     val partitions = repartition.select($"pid").distinct().count()
 
-    val traj_repart = repartition.repartition(partitions.toInt, $"pid").as[TrajectoryPartitioner]//.drop('pid).as[MovingObject]
+    val traj_repart = repartition.repartition(partitions.toInt, $"pid")//.as[TrajectoryPartitioner]//.drop('pid).as[MovingObject]
 
     val mbbrdd=traj_repart.rdd.mapPartitions(it=>{
       SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
