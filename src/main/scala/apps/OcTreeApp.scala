@@ -85,8 +85,6 @@ object OcTreeApp {
 */
     val broadcastLeafs=spark.sparkContext.broadcast(list)
 
- //   val partiEncoder = Encoders.kryo(classOf[Partitioner])
-
     val repartition = traj_dataset.map(mo => {
       val pointST: PointST = mo.getMean()
 
@@ -105,12 +103,13 @@ object OcTreeApp {
       }
 
       mo match {
-        case _: MovingObject =>
+        case _: Trajectory =>
           TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, partition_id)
 
         case _: Segment =>
-          SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId, partition_id)
+          SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId,partition_id)
       }
+
 
     })//(partiEncoder)
 

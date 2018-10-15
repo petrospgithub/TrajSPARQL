@@ -98,8 +98,9 @@ object TrajectorySTPartition {
       TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, ("" + cellId + target).replace("-", "").toInt) //todo allagh edw!!!
       val pid = "" + cellId + target //.replace("-", "")
 
+
       mo match {
-        case _: MovingObject =>
+        case _: Trajectory =>
           TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, pid.hashCode)
 
         case _: Segment =>

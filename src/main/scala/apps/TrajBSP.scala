@@ -2,7 +2,7 @@ package apps
 
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
-import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
+import org.apache.spark.sql.{AnalysisException, Dataset, SparkSession}
 import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
 import types._
 import utils.ArraySearch
@@ -77,7 +77,7 @@ object TrajBSP {
         val pid = "" + cellId + target //.replace("-", "")
 
       mo match {
-        case _: MovingObject =>
+        case _: Trajectory =>
           TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, pid.hashCode)
 
         case _: Segment =>
@@ -94,7 +94,7 @@ object TrajBSP {
 
     val distinct_partitions=partitions_counter.distinct().count()
 
-    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[TrajectoryPartitioner]
+    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid")//.as[TrajectoryPartitioner]
 
     val partitionMBBDF = traj_repart.mapPartitions(it => {
       SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)

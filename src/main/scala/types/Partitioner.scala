@@ -2,7 +2,7 @@ package types
 
 sealed abstract class Partitioner (id:Long, trajectory:Array[CPointST], rowId:Long, pid:Long) extends Product with Serializable {
 
-  lazy val mbbST = {
+  lazy val mbbST: MbbST = {
     val min_t: Long = trajectory(0).getTimestamp
 
     val length: Int = trajectory.length
@@ -27,15 +27,15 @@ sealed abstract class Partitioner (id:Long, trajectory:Array[CPointST], rowId:Lo
       i = i + 1
     }
 
-    val ret = new MbbST(id, newMinX, newMaxX, newMinY, newMaxY, min_t, max_t)
+    val ret = MbbST(rowId, newMinX, newMaxX, newMinY, newMaxY, min_t, max_t)
 
-    ret.setGid(id)
+    //ret.setGid(id)
     //println(ret)
     ret
   }
 
-  val getrowId = rowId
-  val getpid = pid
+  val getrowId: Long = rowId
+  val getpid: Long = pid
 
 
 }
