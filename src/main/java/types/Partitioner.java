@@ -1,8 +1,7 @@
 package types;
 
 import scala.Product;
-
-import java.io.Serializable;
+import scala.Serializable;
 
 public abstract class Partitioner implements Serializable, Product {
 

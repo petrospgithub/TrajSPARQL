@@ -2,7 +2,7 @@ package apps
 
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
-import org.apache.spark.sql.{AnalysisException, Dataset, SparkSession}
+import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
 import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
 import types._
 import utils.ArraySearch
@@ -64,6 +64,8 @@ object TrajBSP {
     val broadGrid = spark.sparkContext.broadcast(partitioner.partitions)
     val broadnumXcells = spark.sparkContext.broadcast(partitioner.numXCells)
 
+    val partiEncoder = Encoders.kryo(classOf[Partitioner])
+
     val repartition=traj_dataset.map(mo=>{
 
         val pointST: PointST = mo.getMean()
@@ -82,8 +84,11 @@ object TrajBSP {
           SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId, pid.hashCode)
       }
 
-    })
+    })(partiEncoder)
 
+    repartition.printSchema()
+
+    /*
     val partitions_counter = repartition.groupBy('pid).count()
 
     partitions_counter.write.csv("bsp_partitions_counter_" + output+"_"+sideLength+"_"+t_sideLength)
@@ -99,7 +104,7 @@ object TrajBSP {
     partitionMBBDF.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
     //traj_repart.write.option("compression", "snappy").mode("overwrite").parquet("bsp_traj_repart_" + output + "_parquet")
-
+*/
     spark.stop()
 
   }
