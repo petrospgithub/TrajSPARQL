@@ -1,14 +1,43 @@
 package types;
 
-import types.CPointST;
-import types.MbbST;
-
 public abstract class Partitioner {
 
     private long id;
     private CPointST[] trajectory;
     private long rowId;
-    private long Long;
+    private long pid;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public CPointST[] getTrajectory() {
+        return trajectory;
+    }
+
+    public void setTrajectory(CPointST[] trajectory) {
+        this.trajectory = trajectory;
+    }
+
+    public long getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(long rowId) {
+        this.rowId = rowId;
+    }
+
+    public long getPid() {
+        return pid;
+    }
+
+    public void setPid(long aLong) {
+        pid = aLong;
+    }
 
     public MbbST mbbST() {
         long min_t = trajectory[0].getTimestamp();
