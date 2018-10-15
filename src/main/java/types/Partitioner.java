@@ -1,6 +1,10 @@
 package types;
 
-public abstract class Partitioner {
+import scala.Product;
+
+import java.io.Serializable;
+
+public abstract class Partitioner implements Serializable, Product {
 
     private long id;
     private CPointST[] trajectory;
@@ -37,6 +41,13 @@ public abstract class Partitioner {
 
     public void setPid(long aLong) {
         pid = aLong;
+    }
+
+    public Partitioner(long id, CPointST[] trajectory, long rowId, long pid) {
+        this.id = id;
+        this.trajectory = trajectory;
+        this.rowId = rowId;
+        this.pid = pid;
     }
 
     public MbbST mbbST() {
