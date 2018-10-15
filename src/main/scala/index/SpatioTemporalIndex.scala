@@ -5,10 +5,10 @@ import java.io.ByteArrayOutputStream
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
 import spatial.partition.MBBindexST
-import types.{MbbST, Partitioner2}
+import types.{MbbST, Partitioner}
 
 object SpatioTemporalIndex {
-  def rtree(it: Array[Partitioner2], datasetMBB: EnvelopeST, nodeCapacity:Int): Iterator[MBBindexST] = {
+  def rtree(it: Array[Partitioner], datasetMBB: EnvelopeST, nodeCapacity:Int): Iterator[MBBindexST] = {
     try {
       val row = it.head
       val rtree3D: STRtree3D=new STRtree3D(nodeCapacity:Int)

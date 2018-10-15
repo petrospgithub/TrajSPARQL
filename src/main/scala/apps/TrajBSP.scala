@@ -86,9 +86,8 @@ object TrajBSP {
 
     })
 
-    repartition.printSchema()
+   // repartition.printSchema()
 
-    /*
     val partitions_counter = repartition.groupBy('pid).count()
 
     partitions_counter.write.csv("bsp_partitions_counter_" + output+"_"+sideLength+"_"+t_sideLength)
@@ -106,7 +105,7 @@ object TrajBSP {
     //traj_repart.write.option("compression", "snappy").mode("overwrite").parquet("bsp_traj_repart_" + output + "_parquet")
 
     spark.stop()
-*/
+
   }
 
 }

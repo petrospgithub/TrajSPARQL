@@ -1,6 +1,6 @@
 package types
 
-sealed abstract class Partitioner2 (id:Long, trajectory:Array[CPointST], rowId:Long, pid:Long) {
+sealed abstract class Partitioner (id:Long, trajectory:Array[CPointST], rowId:Long, pid:Long) extends Product with Serializable {
 
   lazy val mbbST = {
     val min_t: Long = trajectory(0).getTimestamp
@@ -40,5 +40,5 @@ sealed abstract class Partitioner2 (id:Long, trajectory:Array[CPointST], rowId:L
 
 }
 
-case class SegmentPartitioner(id: Long, trajectory: Array[CPointST], traj_id:Long, rowId:Long, pid:Long) extends Partitioner2(id=id, trajectory = trajectory, rowId = rowId, pid = pid)
-case class TrajectoryPartitioner(id: Long, trajectory: Array[CPointST], rowId:Long, pid:Long) extends Partitioner2(id=id, trajectory = trajectory, rowId = rowId, pid = pid)
+case class SegmentPartitioner(id: Long, trajectory: Array[CPointST], traj_id:Long, rowId:Long, pid:Long) extends Partitioner(id=id, trajectory = trajectory, rowId = rowId, pid = pid)
+case class TrajectoryPartitioner(id: Long, trajectory: Array[CPointST], rowId:Long, pid:Long) extends Partitioner(id=id, trajectory = trajectory, rowId = rowId, pid = pid)
