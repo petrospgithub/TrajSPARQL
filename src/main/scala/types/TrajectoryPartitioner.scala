@@ -1,3 +1,3 @@
 package types
 
-case class TrajectoryPartitioner(id: Long, trajectory: Array[CPointST], rowId:Long, pid:Long) extends Partitioner(id, trajectory, rowId, pid)
+case class TrajectoryPartitioner(override val id: Long, override val trajectory: Array[CPointST], override val rowId:Long, override val pid:Long) extends Partitioner2(id, trajectory, rowId, pid)

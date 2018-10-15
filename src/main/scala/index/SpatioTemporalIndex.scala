@@ -5,10 +5,10 @@ import java.io.ByteArrayOutputStream
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
 import spatial.partition.MBBindexST
-import types.{MbbST, Partitioner}
+import types.{MbbST, Partitioner2}
 
 object SpatioTemporalIndex {
-  def rtree(it: Array[Partitioner], datasetMBB: EnvelopeST, nodeCapacity:Int): Iterator[MBBindexST] = {
+  def rtree(it: Array[Partitioner2], datasetMBB: EnvelopeST, nodeCapacity:Int): Iterator[MBBindexST] = {
     try {
       val row = it.head
       val rtree3D: STRtree3D=new STRtree3D(nodeCapacity:Int)
@@ -16,7 +16,7 @@ object SpatioTemporalIndex {
       rtree3D.setDatasetMBB(datasetMBB)
 
       val envelope:EnvelopeST=row.mbbST
-      envelope.setGid(row.getRowId)
+      envelope.setGid(row.rowId)
 
       rtree3D.insert(envelope)
       var minX = envelope.getMinX
@@ -33,7 +33,7 @@ object SpatioTemporalIndex {
       while (i<it.length) {
         val row = it(i)
         val envelope:EnvelopeST=row.mbbST
-        envelope.setGid(row.getRowId)
+        envelope.setGid(row.rowId)
 
         rtree3D.insert(envelope)
 
@@ -75,10 +75,10 @@ object SpatioTemporalIndex {
       /*******************************/
       /*******************************/
 
-      val temp=MbbST(row.getPid,minX,maxX,minY,maxY,minT,maxT)
+      val temp=MbbST(row.pid,minX,maxX,minY,maxY,minT,maxT)
 
       /*******************************/
-      Iterator(MBBindexST(row.getPid, temp, yourBytes))
+      Iterator(MBBindexST(row.pid, temp, yourBytes))
 
     } catch {
       case _: NoSuchElementException => Iterator()
