@@ -84,10 +84,11 @@ object TrajBSP {
           SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId, pid.hashCode)
       }
 
-    }).as[Partitioner2]
+    })
 
     repartition.printSchema()
 
+    /*
     val partitions_counter = repartition.groupBy('pid).count()
 
     partitions_counter.write.csv("bsp_partitions_counter_" + output+"_"+sideLength+"_"+t_sideLength)
@@ -105,7 +106,7 @@ object TrajBSP {
     //traj_repart.write.option("compression", "snappy").mode("overwrite").parquet("bsp_traj_repart_" + output + "_parquet")
 
     spark.stop()
-
+*/
   }
 
 }
