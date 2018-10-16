@@ -104,21 +104,21 @@ object OcTreeApp {
 
       mo match {
         case _: Trajectory =>
-          TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, partition_id)
+          Partitioner(Some(mo.id), Some(mo.trajectory), None, Some(mo.rowId), Some(partition_id))
 
         case _: Segment =>
-          SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId,partition_id)
+          Partitioner(Some(mo.id), Some(mo.trajectory), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(partition_id))
       }
 
 
-    })//(partiEncoder)
+    })
 
     val partitions_counter = repartition.groupBy('pid).count()
     val distinct_partitions=partitions_counter.select('pid).distinct().count()
     
     partitions_counter.write.csv("octree_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
 
-    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[TrajectoryPartitioner]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[Partitioner]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
 
     val partitionMBBDF = traj_repart.mapPartitions(it => {
@@ -147,5 +147,6 @@ object OcTreeApp {
     */
   }
 }
+
 
 

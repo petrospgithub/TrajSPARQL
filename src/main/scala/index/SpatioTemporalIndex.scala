@@ -11,12 +11,16 @@ object SpatioTemporalIndex {
   def rtree(it: Array[Partitioner], datasetMBB: EnvelopeST, nodeCapacity:Int): Iterator[MBBindexST] = {
     try {
       val row = it.head
+
+      val rowId=row.rowId.get
+      val pid=row.pid.get
+
       val rtree3D: STRtree3D=new STRtree3D(nodeCapacity:Int)
 
       rtree3D.setDatasetMBB(datasetMBB)
 
       val envelope:EnvelopeST=row.mbbST
-      envelope.setGid(row.getrowId)
+      envelope.setGid(rowId)
 
       rtree3D.insert(envelope)
       var minX = envelope.getMinX
@@ -33,7 +37,7 @@ object SpatioTemporalIndex {
       while (i<it.length) {
         val row = it(i)
         val envelope:EnvelopeST=row.mbbST
-        envelope.setGid(row.getrowId)
+        envelope.setGid(row.rowId.get)
 
         rtree3D.insert(envelope)
 
@@ -75,10 +79,10 @@ object SpatioTemporalIndex {
       /*******************************/
       /*******************************/
 
-      val temp=MbbST(row.getpid,minX,maxX,minY,maxY,minT,maxT)
+      val temp=MbbST(pid,minX,maxX,minY,maxY,minT,maxT)
 
       /*******************************/
-      Iterator(MBBindexST(row.getpid, temp, yourBytes))
+      Iterator(MBBindexST(pid, temp, yourBytes))
 
     } catch {
       case _: NoSuchElementException => Iterator()

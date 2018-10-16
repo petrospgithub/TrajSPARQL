@@ -95,16 +95,15 @@ object TrajectorySTPartition {
 
       val target = ArraySearch.binarySearchIterative(spatial, pointST.getTimestamp)
 //      types.Partitioner(("" + cellId + target).replace("-", "").toInt, mo.id, mo.trajectory)
-      TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, ("" + cellId + target).replace("-", "").toInt) //todo allagh edw!!!
       val pid = "" + cellId + target //.replace("-", "")
 
 
       mo match {
         case _: Trajectory =>
-          TrajectoryPartitioner(mo.id, mo.trajectory, mo.rowId, pid.hashCode)
+          Partitioner(Some(mo.id), Some(mo.trajectory), None, Some(mo.rowId), Some(pid.hashCode))
 
         case _: Segment =>
-          SegmentPartitioner(mo.id, mo.trajectory, mo.asInstanceOf[Segment].traj_id, mo.rowId, pid.hashCode)
+          Partitioner(Some(mo.id), Some(mo.trajectory), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(pid.hashCode))
       }
   })
 
@@ -114,11 +113,9 @@ object TrajectorySTPartition {
 
     val traj_repart = repartition.repartition(partitions.toInt, $"pid")//.as[TrajectoryPartitioner]//.drop('pid).as[MovingObject]
 
-    val mbbrdd=traj_repart.rdd.mapPartitions(it=>{
+    val partitionMBBDF = traj_repart.mapPartitions(it => {
       SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-    }, preservesPartitioning = true)
-
-    val partitionMBBDF = spark.createDataset(mbbrdd)
+    })
 
     //val temp=partitionMBBDF.collect()
 

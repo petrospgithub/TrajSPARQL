@@ -3,7 +3,10 @@ package types
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, LineString}
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import distance.Distance
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 trait MovingObject {
@@ -155,6 +158,22 @@ trait MovingObject {
       / (trajectory.last.timestamp - trajectory.head.timestamp).toDouble) //*1.943844492
 
   }
+
+  lazy val genericTrajectory:mutable.WrappedArray[Row]={
+
+    val arr=new Array[Row](trajectory.length)
+
+    var i=0
+
+
+
+    while (i<trajectory.length) {
+      arr(i)=Row(trajectory(i).longitude, trajectory(i).latitude, trajectory(i).timestamp)
+      i=i+1
+    }
+    arr
+  }
+
 }
 
   /*

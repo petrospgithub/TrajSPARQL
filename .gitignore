@@ -2,3 +2,7 @@
 target/*
 bigspatial_frameworks/*
 bigspatial_frameworks.tar.gz
+metastore_db/*
+spark-warehouse/*
+derby.log
+qgis
