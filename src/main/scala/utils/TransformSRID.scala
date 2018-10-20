@@ -9,19 +9,19 @@ import org.opengis.referencing.operation.MathTransform
 object TransformSRID {
   def toMeters(geom:Geometry):Geometry={
 
-    val sourceCRS:CoordinateReferenceSystem = CRS.decode("EPSG:4326")
-    val targetCRS:CoordinateReferenceSystem = CRS.decode("EPSG:3857")
+    val sourceCRS:CoordinateReferenceSystem = CRS.decode("EPSG:4326", true)
+    val targetCRS:CoordinateReferenceSystem = CRS.decode("EPSG:3857", true)
 
-    val transform:MathTransform = CRS.findMathTransform(sourceCRS, targetCRS);
+    val transform:MathTransform = CRS.findMathTransform(sourceCRS, targetCRS)
     JTS.transform(geom, transform)
   }
 
   def toMeters(lon:Double, lat:Double):Point={
-    val sourceCRS:CoordinateReferenceSystem = CRS.decode("EPSG:4326")
-    val targetCRS:CoordinateReferenceSystem = CRS.decode("EPSG:3857")
+    val sourceCRS:CoordinateReferenceSystem = CRS.decode("EPSG:4326",true)
+    val targetCRS:CoordinateReferenceSystem = CRS.decode("EPSG:3857", true)
 
     val geometryFactory:GeometryFactory=new GeometryFactory()
-    val sourceGeometry:Geometry= geometryFactory.createPoint(new Coordinate(lat, lon))
+    val sourceGeometry:Geometry= geometryFactory.createPoint(new Coordinate(lon, lat))
     val transform:MathTransform = CRS.findMathTransform(sourceCRS, targetCRS)
     val targetGeometry:Point = JTS.transform(sourceGeometry, transform).asInstanceOf[Point]
     targetGeometry

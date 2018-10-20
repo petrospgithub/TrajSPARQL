@@ -51,7 +51,7 @@ object OcTreeApp {
 
     val broadcastBoundary=spark.sparkContext.broadcast(mbbst)
 
-    val enveEncoder = Encoders.bean(classOf[EnvelopeST])
+    val enveEncoder = Encoders.kryo(classOf[EnvelopeST])
 
     val mbbSamplingList=traj_dataset.map(x=>{
       x.mbbST
@@ -150,3 +150,7 @@ object OcTreeApp {
 
 
 
+/*
+/bin/spark-submit --properties-file "./config/traj_octree.properties" --class apps.OcTreeApp ./target/TrajSPARQL-jar-with-dependencies.jar
+
+ */

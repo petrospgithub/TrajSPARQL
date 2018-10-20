@@ -5,7 +5,7 @@ import org.apache.spark.sql.{Dataset, Encoders}
 import types._
 
 object STGrid {
-
+/*
   def getMinMax(traj_dataset: Dataset[MovingObject]): EnvelopeST = {
 
     //import traj_dataset.sparkSession.implicits._
@@ -30,6 +30,72 @@ object STGrid {
       env
     }
   }
+*/
+  def getMinMax(traj_dataset: Dataset[MovingObject]): EnvelopeST = {
+
+    //import traj_dataset.sparkSession.implicits._
+
+    val enveEncoder = Encoders.kryo(classOf[EnvelopeST])
+
+    traj_dataset.map(row => {
+      row.mbbST
+    })(enveEncoder).mapPartitions(it=>{
+
+      val envelope=it.next()
+      var minX = envelope.getMinX
+      var minY = envelope.getMinY
+
+      var maxX = envelope.getMaxX
+      var maxY = envelope.getMaxY
+
+      var minT = envelope.getMinT
+      var maxT = envelope.getMaxT
+
+      while (it.hasNext) {
+        val envelope:EnvelopeST=it.next()
+        //envelope.setGid(row.rowId.get)
+
+        if (minX > envelope.getMinX) {
+          minX = envelope.getMinX
+        }
+        if (maxX < envelope.getMaxX) {
+          maxX = envelope.getMaxX
+        }
+
+        if (minY > envelope.getMinY) {
+          minY = envelope.getMinY
+        }
+        if (maxY < envelope.getMaxY) {
+          maxY = envelope.getMaxY
+        }
+
+        if (minT > envelope.getMinT) {
+          minT = envelope.getMinT
+        }
+        if (maxT < envelope.getMaxT) {
+          maxT = envelope.getMaxT
+        }
+      }
+
+      Iterator(new EnvelopeST(minX, maxX, minY, maxY, minT, maxT))
+
+    })(enveEncoder).reduce { (oldMM, newMM) =>
+      val newMinX = Math.min(oldMM.getMinX, newMM.getMinX)
+      val newMaxX = Math.max(oldMM.getMaxX, newMM.getMaxX)
+
+      val newMinY = Math.min(oldMM.getMinY, newMM.getMinY)
+      val newMaxY = Math.max(oldMM.getMaxY, newMM.getMaxY)
+
+      val newMinT =Math.min(oldMM.getMinT, newMM.getMinT)
+      val newMaxT = Math.max(oldMM.getMaxT, newMM.getMaxT)
+
+      val env=new EnvelopeST(newMinX, newMaxX, newMinY, newMaxY, newMinT, newMaxT)
+      env.setGid(-1)
+
+      env
+    }
+  }
+
   def getCellBounds(id: Int, xCells: Int, tarr: Array[Trange],xLength: Double, yLength: Double, tLength: Long, minX: Double, minY: Double, minT: Long): Array[MbbST] = {
 
     val dy = id / xCells
