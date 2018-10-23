@@ -114,7 +114,8 @@ object OcTreeApp {
     })
 
     val partitions_counter = repartition.groupBy('pid).count()
-    val distinct_partitions=partitions_counter.select('pid).distinct().count()
+
+    val distinct_partitions = repartition.select('pid).distinct().count()
     
     partitions_counter.write.csv("octree_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
 

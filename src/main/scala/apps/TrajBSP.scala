@@ -10,7 +10,7 @@ import utils.ArraySearch
 object TrajBSP {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
-      .appName("TrajectoryBSP").master("local[*]")
+      .appName("TrajectoryBSP")//.master("local[*]")
       .getOrCreate()
     /*
         val input: InputStream = new FileInputStream(System.getProperty("user.dir") + "/config/traj_bsp.properties")
@@ -88,7 +88,7 @@ object TrajBSP {
 
     partitions_counter.write.csv("bsp_partitions_counter_" + output + "_" + sideLength + "_" + t_sideLength)
 
-    val distinct_partitions = partitions_counter.distinct().count()
+    val distinct_partitions = repartition.select('pid).distinct().count()
 
     val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid") //.as[TrajectoryPartitioner]
 
