@@ -10,7 +10,7 @@ import utils.ArraySearch
 object TrajBSP {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
-      .appName("TrajectoryBSP")//.master("local[*]")
+      .appName("TrajectoryBSP").master("local[*]")
       .getOrCreate()
     /*
         val input: InputStream = new FileInputStream(System.getProperty("user.dir") + "/config/traj_bsp.properties")
@@ -34,7 +34,7 @@ object TrajBSP {
     val output = prop.get("spark.output")
     // val file_output = prop.get("spark.filetype")
 
-    val sideLength = prop.get("spark.sidelength").toDouble
+    val sideLength =prop.get("spark.sidelength").toDouble
 
     val path = prop.get("spark.path")
 
@@ -82,23 +82,23 @@ object TrajBSP {
         case _: Segment =>
           Partitioner(Some(mo.id), Some(mo.trajectory), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(pid.hashCode))
       }
-    }) //.as[Partitioner]
+    })
 
     val partitions_counter = repartition.groupBy('pid).count()
 
-    partitions_counter.write.csv("bsp_partitions_counter_" + output + "_" + sideLength + "_" + t_sideLength)
+    //val distinct_partitions = repartition.select('pid).distinct().count()
 
-    val distinct_partitions = repartition.select('pid).distinct().count()
+    partitions_counter.write.csv("bsp_partitions_counter_" + output+"_"+sideLength+"_"+t_sideLength)
 
-    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid") //.as[TrajectoryPartitioner]
+    val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({
+      (id, it) => {
+        SpatioTemporalIndex.rtree(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+      }
+    })
 
-    val rdd = traj_repart.rdd.mapPartitions(it => {
-      SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-    },preservesPartitioning = true)
-
-    spark.createDataset(rdd).write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
+    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
-    //traj_repart.write.option("compression", "snappy").mode("overwrite").parquet("bsp_traj_repart_" + output + "_parquet")
+
 
     spark.stop()
 

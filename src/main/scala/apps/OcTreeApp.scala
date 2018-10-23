@@ -115,21 +115,33 @@ object OcTreeApp {
 
     val partitions_counter = repartition.groupBy('pid).count()
 
-    val distinct_partitions = repartition.select('pid).distinct().count()
+    //val distinct_partitions = repartition.select('pid).distinct().count()
     
     partitions_counter.write.csv("octree_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
 
-    val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[Partitioner]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-
-    val partitionMBBDF = traj_repart.mapPartitions(it => {
-      SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+    val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({
+      (id, it) => {
+        SpatioTemporalIndex.rtree(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+      }
     })
 
+    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
-    partitionMBBDF.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_" + output + "_parquet")
-  
 
+
+
+    //val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[Partitioner]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
+
+/*
+    val rdd = traj_repart.rdd.mapPartitions(it => {
+      SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+    },preservesPartitioning = true)
+
+    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
+    spark.createDataset(rdd).write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
+
+*/
     spark.close()
     /*
         temp.foreach(x => {

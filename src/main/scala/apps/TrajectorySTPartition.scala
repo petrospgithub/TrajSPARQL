@@ -40,12 +40,7 @@ object TrajectorySTPartition {
 
     val prop=spark.sparkContext.getConf
 
-    val host = prop.get("spark.host")
-    val user = prop.get("spark.user")
-    val pass = prop.get("spark.pass")
-    val dbtable = prop.get("spark.dbtable")
     val output = prop.get("spark.output")
-    val file_output = prop.get("spark.filetype")
 
     val partitionsPerDimension = prop.get("spark.partitionsspatialperdimension").toInt
 
@@ -111,17 +106,33 @@ object TrajectorySTPartition {
 
     val partitions = repartition.select($"pid").distinct().count()
 
-    val traj_repart = repartition.repartition(partitions.toInt, $"pid")//.as[TrajectoryPartitioner]//.drop('pid).as[MovingObject]
 
-    val partitionMBBDF = traj_repart.mapPartitions(it => {
-      SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+    val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({
+      (id, it) => {
+        SpatioTemporalIndex.rtree(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+      }
     })
 
+    val partitions_counter = repartition.groupBy('pid).count()
+
+    //val distinct_partitions = repartition.select('pid).distinct().count()
+
+    partitions_counter.write.csv("bsp_partitions_counter_" + output+"_"+partitionsPerDimension+"_"+temporalPartition)
+
+    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("st_partitionMBBDF_" + output + "_parquet")
+    repartition.write.option("compression", "snappy").mode("overwrite").parquet("st_repartition_" + output + "_parquet")
+
+
+    //val traj_repart = repartition.repartition(partitions.toInt, $"pid")//.as[TrajectoryPartitioner]//.drop('pid).as[MovingObject]
+/*
+    val rdd = traj_repart.rdd.mapPartitions(it => {
+      SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+    },preservesPartitioning = true)
     //val temp=partitionMBBDF.collect()
 
-    partitionMBBDF.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
+    spark.createDataset(rdd).write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
-
+*/
     spark.close()
 
     /*

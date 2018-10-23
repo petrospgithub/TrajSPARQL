@@ -4,4 +4,4 @@ import types.MbbST
 
 case class MBBindexSpatial(id:Long, ogc_geom:Array[Byte], tree:Array[Byte])
 
-case class MBBindexST(id:Long, box:MbbST, tree:Array[Byte])
+case class MBBindexST(id:Option[Long], box:Option[MbbST], tree:Option[Array[Byte]])

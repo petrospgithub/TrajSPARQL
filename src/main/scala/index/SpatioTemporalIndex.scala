@@ -8,9 +8,9 @@ import spatial.partition.MBBindexST
 import types.{MbbST, Partitioner}
 
 object SpatioTemporalIndex {
-  def rtree(it: Array[Partitioner], datasetMBB: EnvelopeST, nodeCapacity:Int): Iterator[MBBindexST] = {
-    try {
-      val row = it.head
+  def rtree(it: Iterator[Partitioner], datasetMBB: EnvelopeST, nodeCapacity:Int): MBBindexST = {
+    //try {
+      val row = it.next()
 
       val rowId=row.rowId.get
       val pid=row.pid.get
@@ -32,10 +32,10 @@ object SpatioTemporalIndex {
       var minT = envelope.getMinT
       var maxT = envelope.getMaxT
 
-      var i=0
+      var i=1
 
-      while (i<it.length) {
-        val row = it(i)
+      while (it.hasNext) {
+        val row = it.next()
         val envelope:EnvelopeST=row.mbbST
         envelope.setGid(row.rowId.get)
 
@@ -82,11 +82,11 @@ object SpatioTemporalIndex {
       val temp=MbbST(pid,minX,maxX,minY,maxY,minT,maxT)
 
       /*******************************/
-      Iterator(MBBindexST(pid, temp, yourBytes))
+      MBBindexST(Some(pid), Some(temp), Some(yourBytes))
 
-    } catch {
-      case _: NoSuchElementException => Iterator()
-    }
+    //} catch {
+      //case _: NoSuchElementException => MBBindexST(None,None,None)
+    //}
   }
 }
 
