@@ -92,11 +92,11 @@ object TrajBSP {
 
     val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid") //.as[TrajectoryPartitioner]
 
-    val partitionMBBDF = traj_repart.mapPartitions(it => {
+    val rdd = traj_repart.rdd.mapPartitions(it => {
       SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-    })
+    },preservesPartitioning = true)
 
-    partitionMBBDF.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
+    spark.createDataset(rdd).write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
     //traj_repart.write.option("compression", "snappy").mode("overwrite").parquet("bsp_traj_repart_" + output + "_parquet")
 
