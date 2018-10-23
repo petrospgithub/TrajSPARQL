@@ -41,45 +41,48 @@ object STGrid {
       row.mbbST
     })(enveEncoder).mapPartitions(it=>{
 
-      val envelope=it.next()
-      var minX = envelope.getMinX
-      var minY = envelope.getMinY
+      if (it.hasNext) {
+        val envelope = it.next()
+        var minX = envelope.getMinX
+        var minY = envelope.getMinY
 
-      var maxX = envelope.getMaxX
-      var maxY = envelope.getMaxY
+        var maxX = envelope.getMaxX
+        var maxY = envelope.getMaxY
 
-      var minT = envelope.getMinT
-      var maxT = envelope.getMaxT
+        var minT = envelope.getMinT
+        var maxT = envelope.getMaxT
 
-      while (it.hasNext) {
-        val envelope:EnvelopeST=it.next()
-        //envelope.setGid(row.rowId.get)
+        while (it.hasNext) {
+          val envelope: EnvelopeST = it.next()
+          //envelope.setGid(row.rowId.get)
 
-        if (minX > envelope.getMinX) {
-          minX = envelope.getMinX
-        }
-        if (maxX < envelope.getMaxX) {
-          maxX = envelope.getMaxX
+          if (minX > envelope.getMinX) {
+            minX = envelope.getMinX
+          }
+          if (maxX < envelope.getMaxX) {
+            maxX = envelope.getMaxX
+          }
+
+          if (minY > envelope.getMinY) {
+            minY = envelope.getMinY
+          }
+          if (maxY < envelope.getMaxY) {
+            maxY = envelope.getMaxY
+          }
+
+          if (minT > envelope.getMinT) {
+            minT = envelope.getMinT
+          }
+          if (maxT < envelope.getMaxT) {
+            maxT = envelope.getMaxT
+          }
         }
 
-        if (minY > envelope.getMinY) {
-          minY = envelope.getMinY
-        }
-        if (maxY < envelope.getMaxY) {
-          maxY = envelope.getMaxY
-        }
-
-        if (minT > envelope.getMinT) {
-          minT = envelope.getMinT
-        }
-        if (maxT < envelope.getMaxT) {
-          maxT = envelope.getMaxT
-        }
+        Iterator(new EnvelopeST(minX, maxX, minY, maxY, minT, maxT))
+      } else {
+        Iterator()
       }
-
-      Iterator(new EnvelopeST(minX, maxX, minY, maxY, minT, maxT))
-
-    })(enveEncoder).reduce { (oldMM, newMM) =>
+    })(enveEncoder).filter(row => !row.isNull).reduce { (oldMM, newMM) =>
       val newMinX = Math.min(oldMM.getMinX, newMM.getMinX)
       val newMaxX = Math.max(oldMM.getMaxX, newMM.getMaxX)
 
