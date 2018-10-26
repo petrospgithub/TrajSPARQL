@@ -13,21 +13,21 @@ object OcTreeApp {
     val spark = SparkSession.builder
       .appName("TrajectoryOctree")//.master("local[*]")
       .getOrCreate()
-/*
-        val input: InputStream = new FileInputStream(System.getProperty("user.dir") + "/config/traj_octree.properties")
+    /*
+            val input: InputStream = new FileInputStream(System.getProperty("user.dir") + "/config/traj_octree.properties")
 
-        val prop: Properties = new Properties()
-        prop.load(input)
+            val prop: Properties = new Properties()
+            prop.load(input)
 
-        val output = prop.get("spark.output")
+            val output = prop.get("spark.output")
 
-        val path = prop.getProperty("spark.path")
-        val fraction=prop.getProperty("spark.fraction").toDouble
-        val maxItemByNode=prop.getProperty("spark.maxitembynode").toInt
-        val maxLevel=prop.getProperty("spark.maxlevel").toInt
+            val path = prop.getProperty("spark.path")
+            val fraction=prop.getProperty("spark.fraction").toDouble
+            val maxItemByNode=prop.getProperty("spark.maxitembynode").toInt
+            val maxLevel=prop.getProperty("spark.maxlevel").toInt
 
-        val rtree_nodeCapacity=prop.getProperty("spark.localindex_nodecapacity").toInt
-*/
+            val rtree_nodeCapacity=prop.getProperty("spark.localindex_nodecapacity").toInt
+    */
     val prop=spark.sparkContext.getConf
     val output = prop.get("spark.output")
 
@@ -76,13 +76,13 @@ object OcTreeApp {
           )
         })
         */
-/*
+
     list.foreach(x=>{
       x.setGid(i)
       //println(x.wkt())
       i=i+1
     })
-*/
+
     val broadcastLeafs=spark.sparkContext.broadcast(list)
 
     val repartition = traj_dataset.map(mo => {
@@ -115,8 +115,6 @@ object OcTreeApp {
 
     val partitions_counter = repartition.groupBy('pid).count()
 
-    //val distinct_partitions = repartition.select('pid).distinct().count()
-    
     partitions_counter.write.csv("octree_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
 
 
@@ -130,18 +128,6 @@ object OcTreeApp {
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
 
 
-
-    //val traj_repart = repartition.repartition(distinct_partitions.toInt, $"pid").as[Partitioner]//.persist(StorageLevel.MEMORY_AND_DISK_SER)
-
-/*
-    val rdd = traj_repart.rdd.mapPartitions(it => {
-      SpatioTemporalIndex.rtree(it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-    },preservesPartitioning = true)
-
-    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
-    spark.createDataset(rdd).write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
-
-*/
     spark.close()
     /*
         temp.foreach(x => {

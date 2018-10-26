@@ -10,7 +10,7 @@ import utils.ArraySearch
 object TrajBSP {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
-      .appName("TrajectoryBSP").master("local[*]")
+      .appName("TrajectoryBSP")//.master("local[*]")
       .getOrCreate()
     /*
         val input: InputStream = new FileInputStream(System.getProperty("user.dir") + "/config/traj_bsp.properties")
