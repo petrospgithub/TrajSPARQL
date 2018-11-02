@@ -1,6 +1,6 @@
 package preprocessing
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Encoders, SparkSession}
 import org.apache.spark.sql.functions.{collect_list, struct}
 import org.apache.spark.sql.functions._
 import types.SpatioTemporalPoints
@@ -51,9 +51,27 @@ object trajectoryConstruction {
       'timestamp - (lag('timestamp, 1) over windowSpec)
     )
 
-    val distinct=sampling.select('id).distinct().count().toInt
+    val foo=sampling.groupByKey(row=>row.getAs[Long]("id")).flatMapGroups({
+      (id, it) => {
+        var traj_id:Int=1
+        val ret=it.map(row=> {
+          if (row.isNullAt(4)) {
+            (row.getAs[Long](0), row.getAs[Double](1), row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
+          } else {
+            if (row.getAs[Long](4) <= broadcastSplit.value) {
+              (row.getAs[Long](0), row.getAs[Double](1), row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
+            } else {
+              traj_id = traj_id + 1
+              (row.getAs[Long](0), row.getAs[Double](1), row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
+            }
+          }
+        })
+        ret
+      }
+    })
 
-    val foo=sampling.repartition(distinct, 'id).mapPartitions(partition=>{
+/*
+      partition=>{
 
       var traj_id:Int=1
       partition.map(row=>{
@@ -69,8 +87,8 @@ object trajectoryConstruction {
           }
         }
       })
-
-    })
+*/
+   // })
 
     foo.show()
     //println(foo.rdd.getNumPartitions)

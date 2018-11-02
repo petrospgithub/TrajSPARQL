@@ -66,12 +66,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.thrift/libthrift -->
-        <!-- https://mvnrepository.com/artifact/de.ruedigermoeller/fst -->
+        <!-- https://mvnrepository.com/artifact/com.esotericsoftware/kryo -->
         <dependency>
-            <groupId>de.ruedigermoeller</groupId>
-            <artifactId>fst</artifactId>
-            <version>2.57</version>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>4.0.0</version>
         </dependency>
 
 

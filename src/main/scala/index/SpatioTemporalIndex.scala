@@ -1,5 +1,10 @@
 package index
 
+import java.io.ByteArrayOutputStream
+
+import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.serializers.JavaSerializer
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
 import spatial.partition.MBBindexST
@@ -65,14 +70,18 @@ object SpatioTemporalIndex {
 
       rtree3D.build()
       /*******************************/
+/*
+https://www.baeldung.com/kryo
+ */
 
-      import org.nustaq.serialization.FSTConfiguration
+      val kryo = new Kryo()
 
-      val conf = FSTConfiguration.createDefaultConfiguration
+      kryo.register(classOf[STRtree3D], new JavaSerializer)
+      val output = new Output(new ByteArrayOutputStream())
 
-      val yourBytes: Array[Byte] = conf.asByteArray(rtree3D)
+      kryo.writeObject(output, rtree3D)
 
-      //val bos: ByteArrayOutputStream = new ByteArrayOutputStream
+      val yourBytes: Array[Byte] = output.getBuffer
 
       /*******************************/
       /*******************************/
