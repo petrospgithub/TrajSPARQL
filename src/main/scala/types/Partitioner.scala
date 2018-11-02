@@ -1,7 +1,5 @@
 package types
 
-import org.nustaq.serialization.FSTConfiguration
-
 case class Partitioner(id: Option[Long], trajectory: Option[Array[CPointST]], traj_id:Option[Long], rowId:Option[Long], pid:Option[Long]) {
   lazy val mbbST: MbbST = {
     val min_t: Long = trajectory.get(0).getTimestamp
@@ -34,12 +32,12 @@ case class Partitioner(id: Option[Long], trajectory: Option[Array[CPointST]], tr
   }
 }
 
+
+//todo trajectory as blob!
+/*
 case class PartitionerBlob(id: Option[Long], traj_blob: Option[Array[Byte]], traj_id:Option[Long], rowId:Option[Long], pid:Option[Long]) {
   lazy val mbbST: MbbST = {
-
-    val conf:FSTConfiguration = FSTConfiguration.createDefaultConfiguration()
-
-    val trajectory:Array[CPointST] = conf.asObject(traj_blob.get).asInstanceOf[Array[CPointST]]
+//TODO
 
     val min_t: Long = trajectory(0).getTimestamp
 
@@ -69,4 +67,6 @@ case class PartitionerBlob(id: Option[Long], traj_blob: Option[Array[Byte]], tra
 
     ret
   }
+
 }
+*/
