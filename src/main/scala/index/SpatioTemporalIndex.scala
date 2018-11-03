@@ -1,5 +1,7 @@
 package index
 
+import java.io.{ByteArrayOutputStream, ObjectOutputStream}
+
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
 import org.apache.commons.lang3.SerializationUtils
@@ -66,40 +68,32 @@ object SpatioTemporalIndex {
 
       rtree3D.build()
       /*******************************/
-/*
-https://www.baeldung.com/kryo
- */
 
-/*
-      val kryo = new Kryo()
+      val bos = new ByteArrayOutputStream()
+    //  ObjectOutput out = null;
+    //  try {
+       val out = new ObjectOutputStream(bos)
+        out.writeObject(rtree3D)
+        out.flush()
+        val yourBytes = bos.toByteArray
 
-      kryo.register(classOf[STRtree3D], new JavaSerializer)
+       val temp=MbbST(pid,minX,maxX,minY,maxY,minT,maxT)
 
-      val output = new Output(new ByteArrayOutputStream())
+       MBBindexST(Some(pid), Some(temp), Some(yourBytes))
 
-      kryo.writeObject(output, rtree3D)
-      output.flush()
-
-      val yourBytes: Array[Byte] = output.getBuffer
-
-      output.close()
-
-
-      val input = new Input(new ByteArrayInputStream(yourBytes))
-
-      val retrievedObject = kryo.readObject(input, classOf[STRtree3D])
-
-      println(retrievedObject.depth())
-*/
-      val yourBytes:Array[Byte] = SerializationUtils.serialize(rtree3D)
-
+    //  } finally {
+   //     try {
+   //       bos.close();
+    //    } catch (IOException ex) {
+          // ignore close exception
+  //  /    }
+  //    }
+//
       /*******************************/
       /*******************************/
 
-      val temp=MbbST(pid,minX,maxX,minY,maxY,minT,maxT)
 
       /*******************************/
-      MBBindexST(Some(pid), Some(temp), Some(yourBytes))
 
     } catch {
       case _: NoSuchElementException => MBBindexST(None,None,None)
