@@ -1,12 +1,8 @@
 package index
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
-
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.{Input, Output}
-import com.esotericsoftware.kryo.serializers.JavaSerializer
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
+import org.apache.commons.lang3.SerializationUtils
 import spatial.partition.MBBindexST
 import types.{MbbST, Partitioner}
 
@@ -74,6 +70,7 @@ object SpatioTemporalIndex {
 https://www.baeldung.com/kryo
  */
 
+/*
       val kryo = new Kryo()
 
       kryo.register(classOf[STRtree3D], new JavaSerializer)
@@ -93,7 +90,8 @@ https://www.baeldung.com/kryo
       val retrievedObject = kryo.readObject(input, classOf[STRtree3D])
 
       println(retrievedObject.depth())
-
+*/
+      val yourBytes:Array[Byte] = SerializationUtils.serialize(rtree3D)
 
       /*******************************/
       /*******************************/
