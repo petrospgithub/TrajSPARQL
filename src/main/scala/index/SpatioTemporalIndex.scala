@@ -1,9 +1,9 @@
 package index
 
-import java.io.ByteArrayOutputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.JavaSerializer
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
@@ -77,11 +77,23 @@ https://www.baeldung.com/kryo
       val kryo = new Kryo()
 
       kryo.register(classOf[STRtree3D], new JavaSerializer)
+
       val output = new Output(new ByteArrayOutputStream())
 
       kryo.writeObject(output, rtree3D)
+      output.flush()
 
       val yourBytes: Array[Byte] = output.getBuffer
+
+      output.close()
+
+
+      val input = new Input(new ByteArrayInputStream(yourBytes))
+
+      val retrievedObject = kryo.readObject(input, classOf[STRtree3D])
+
+      println(retrievedObject.depth())
+
 
       /*******************************/
       /*******************************/
