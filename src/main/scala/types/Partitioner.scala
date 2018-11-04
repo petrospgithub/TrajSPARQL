@@ -1,7 +1,9 @@
 package types
 
+import di.thesis.indexing.types.EnvelopeST
+
 case class Partitioner(id: Option[Long], trajectory: Option[Array[CPointST]], traj_id:Option[Long], rowId:Option[Long], pid:Option[Long]) {
-  lazy val mbbST: MbbST = {
+  lazy val mbbST: EnvelopeST = {
     val min_t: Long = trajectory.get(0).getTimestamp
 
     val length: Int = trajectory.get.length
