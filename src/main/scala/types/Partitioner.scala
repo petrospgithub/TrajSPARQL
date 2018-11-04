@@ -28,8 +28,8 @@ case class Partitioner(id: Option[Long], trajectory: Option[Array[CPointST]], tr
       i = i + 1
     }
 
-    val ret = MbbST(rowId.get, newMinX, newMaxX, newMinY, newMaxY, min_t, max_t)
-
+    val ret = new EnvelopeST(newMinX, newMaxX, newMinY, newMaxY, min_t, max_t)
+    ret.setGid(id.get)
     ret
   }
 }
