@@ -20,6 +20,10 @@ object SpatioTemporalIndex {
       rtree3D.setDatasetMBB(datasetMBB)
 
       val envelope: EnvelopeST = row.mbbST
+
+      @transient lazy val log = org.apache.log4j.LogManager.getLogger("myLogger")
+      log.warn("Envelope type: \t" + envelope.getClass.getCanonicalName)
+
       envelope.setGid(rowId)
 
       rtree3D.insert(envelope)
@@ -38,6 +42,8 @@ object SpatioTemporalIndex {
         val row = it.next()
         val envelope: EnvelopeST = row.mbbST
         envelope.setGid(row.rowId.get)
+
+        log.warn("Envelope type: \t" + envelope.getClass.getCanonicalName)
 
         rtree3D.insert(envelope)
 
