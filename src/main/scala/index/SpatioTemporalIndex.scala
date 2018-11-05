@@ -1,8 +1,9 @@
 package index
 
+import java.io.{ByteArrayOutputStream, ObjectOutputStream}
+
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
-import org.apache.commons.lang3.SerializationUtils
 import spatial.partition.MBBindexST
 import types.{MbbST, Partitioner}
 
@@ -67,7 +68,17 @@ object SpatioTemporalIndex {
 
       rtree3D.build()
       /** *****************************/
-      val yourBytes = SerializationUtils.serialize(rtree3D)
+
+      val bos = new ByteArrayOutputStream()
+      //  ObjectOutput out = null;
+      //  try {
+      val out = new ObjectOutputStream(bos)
+      out.writeObject(rtree3D)
+      out.flush()
+      val yourBytes = bos.toByteArray.clone()
+
+      out.close()
+      /** *****************************/
 
       val temp = MbbST(pid, minX, maxX, minY, maxY, minT, maxT)
 
