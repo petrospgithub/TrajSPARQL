@@ -2,6 +2,9 @@ package index
 
 import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
+import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.serializers.JavaSerializer
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
 import spatial.partition.MBBindexST
@@ -21,9 +24,6 @@ object SpatioTemporalIndex {
 
       val envelope: EnvelopeST = row.mbbST
 
-      @transient lazy val log = org.apache.log4j.LogManager.getLogger("myLogger")
-      log.warn("Envelope type: \t" + envelope.getClass.getCanonicalName)
-
       envelope.setGid(rowId)
 
       rtree3D.insert(envelope)
@@ -42,8 +42,6 @@ object SpatioTemporalIndex {
         val row = it.next()
         val envelope: EnvelopeST = row.mbbST
         envelope.setGid(row.rowId.get)
-
-        log.warn("Envelope type: \t" + envelope.getClass.getCanonicalName)
 
         rtree3D.insert(envelope)
 
@@ -73,7 +71,7 @@ object SpatioTemporalIndex {
 
       rtree3D.build()
       /** *****************************/
-
+/*
       val bos = new ByteArrayOutputStream()
       //  ObjectOutput out = null;
       //  try {
@@ -83,6 +81,18 @@ object SpatioTemporalIndex {
       val yourBytes = bos.toByteArray.clone()
 
       out.close()
+*/
+
+      val kryo = new Kryo()
+      val output = new Output(new ByteArrayOutputStream())
+      kryo.register(classOf[STRtree3D], new JavaSerializer)
+
+      kryo.writeObject(output, rtree3D)
+
+      output.flush()
+      val yourBytes = output.getBuffer.clone()
+
+      output.close()
 
       val temp = MbbST(pid, minX, maxX, minY, maxY, minT, maxT)
 

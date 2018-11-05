@@ -14,8 +14,6 @@ object OcTreeApp {
       .appName("TrajectoryOctree")//.master("local[*]")
       .getOrCreate()
 
-    spark.sparkContext.setLogLevel("WARN")
-
 
     /*
             val input: InputStream = new FileInputStream(System.getProperty("user.dir") + "/config/traj_octree.properties")
@@ -52,9 +50,6 @@ object OcTreeApp {
     }
 
     val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])
-
-    @transient lazy val log = org.apache.log4j.LogManager.getLogger("myLogger")
-    log.warn("STGrid.getMinMax type: \t" + mbbst.getClass.getCanonicalName)
 
     val broadcastBoundary=spark.sparkContext.broadcast(mbbst)
 
