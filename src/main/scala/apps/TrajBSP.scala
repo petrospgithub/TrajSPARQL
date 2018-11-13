@@ -102,7 +102,7 @@ object TrajBSP {
     partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
 
-    partitionMBB.coalesce(1).mapPartitions(f=>{
+    partitionMBB.repartition(1).mapPartitions(f=>{
       val rtree3D: STRtree3D = new STRtree3D()
 
       rtree3D.setDatasetMBB(broadcastBoundary.value)
@@ -126,7 +126,7 @@ object TrajBSP {
       out.close()
 
       Iterator(Tree(Some(yourBytes)))
-    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree" + output + "_parquet")
+    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_" + output + "_parquet")
 
     spark.stop()
 

@@ -133,7 +133,7 @@ object OcTreeApp {
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
 
 
-    partitionMBB.coalesce(1).mapPartitions(f=>{
+    partitionMBB.repartition(1).mapPartitions(f=>{
       val rtree3D: STRtree3D = new STRtree3D()
 
       rtree3D.setDatasetMBB(broadcastBoundary.value)
@@ -157,7 +157,7 @@ object OcTreeApp {
       out.close()
 
       Iterator(Tree(Some(yourBytes)))
-    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree" + output + "_parquet")
+    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_" + output + "_parquet")
 
 
 

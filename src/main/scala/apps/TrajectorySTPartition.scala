@@ -126,7 +126,7 @@ object TrajectorySTPartition {
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("st_repartition_" + output + "_parquet")
 
 
-    partitionMBB.coalesce(1).mapPartitions(f=>{
+    partitionMBB.repartition(1).mapPartitions(f=>{
       val rtree3D: STRtree3D = new STRtree3D()
 
       rtree3D.setDatasetMBB(broadcastBoundary.value)
@@ -150,7 +150,7 @@ object TrajectorySTPartition {
       out.close()
 
       Iterator(Tree(Some(yourBytes)))
-    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree" + output + "_parquet")
+    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_" + output + "_parquet")
 
 
     //val traj_repart = repartition.repartition(partitions.toInt, $"pid")//.as[TrajectoryPartitioner]//.drop('pid).as[MovingObject]
