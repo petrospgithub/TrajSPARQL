@@ -1,6 +1,9 @@
 package apps
 
+import java.io.{ByteArrayOutputStream, ObjectOutputStream}
+
 import di.thesis.indexing.octree.OctreePartitioning
+import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
 import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
@@ -128,6 +131,34 @@ object OcTreeApp {
 
     partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
+
+
+    partitionMBB.coalesce(1).mapPartitions(f=>{
+      val rtree3D: STRtree3D = new STRtree3D()
+
+      rtree3D.setDatasetMBB(broadcastBoundary.value)
+
+      while (f.hasNext) {
+        val temp=f.next()
+        val envelope: EnvelopeST = temp.box.get
+        envelope.setGid(temp.id.get)
+        rtree3D.insert(envelope)
+      }
+
+      rtree3D.build()
+
+      val bos = new ByteArrayOutputStream()
+
+      val out = new ObjectOutputStream(bos)
+      out.writeObject(rtree3D)
+      out.flush()
+      val yourBytes = bos.toByteArray.clone()
+
+      out.close()
+
+      Iterator(Tree(Some(yourBytes)))
+    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree" + output + "_parquet")
+
 
 
     spark.close()
