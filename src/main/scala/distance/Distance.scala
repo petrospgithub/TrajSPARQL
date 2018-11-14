@@ -12,8 +12,8 @@ object Distance {
   }
 
   def getEuclideanDistance (lat1:Double, lon1:Double, lat2:Double, lon2:Double):Double={
-    val xcoord = Math.abs (lon1 - lon2)
-    val ycoord = Math.abs (lat1- lat2)
+    val xcoord = lon1 - lon2
+    val ycoord = lat1- lat2
 
     Math.sqrt(xcoord*xcoord +ycoord*ycoord)
   }

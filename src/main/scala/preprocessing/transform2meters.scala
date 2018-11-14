@@ -20,9 +20,9 @@ object transform2meters {
       val lat = input.getAs[String](2)
       val ts = input.getAs[String](3)
 
-      val geom=TransformSRID.toMeters(lon.toDouble, lat.toDouble)
+      val geom=TransformSRID.myMeters(lon.toDouble, lat.toDouble)
 
-      SpatioTemporalPoints(Some(id.toLong), Some(geom.getX), Some(geom.getY), Some(ts.toLong))
+      SpatioTemporalPoints(Some(id.toLong), Some(geom._1), Some(geom._2), Some(ts.toLong))
 
     }).write.mode("overwrite").csv(args(1))
 

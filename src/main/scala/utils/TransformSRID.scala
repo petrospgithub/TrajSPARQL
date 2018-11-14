@@ -26,4 +26,24 @@ object TransformSRID {
     val targetGeometry:Point = JTS.transform(sourceGeometry, transform).asInstanceOf[Point]
     targetGeometry
   }
+
+  val RADIUS = 6378137.0
+
+  def y2lat(aY: Double): Double = Math.toDegrees(Math.atan(Math.exp(aY / RADIUS)) * 2 - Math.PI / 2)
+
+  def x2lon(aX: Double): Double = Math.toDegrees(aX / RADIUS)
+
+  /* These functions take their angle parameter in degrees and return a length in meters */
+
+  def lat2y(aLat: Double): Double = Math.log(Math.tan(Math.PI / 4 + Math.toRadians(aLat) / 2)) * RADIUS
+
+  def lon2x(aLong: Double): Double = Math.toRadians(aLong) * RADIUS
+
+  def myMeters(lon:Double, lat:Double):(Double,Double)={
+    val x=lon2x(lon)
+    val y=lat2y(lat)
+
+    (x,y)
+  }
+
 }
