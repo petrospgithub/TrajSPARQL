@@ -10,6 +10,7 @@ import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
 import spatiotemporal.STGrid
 import types._
 import utils.TrajectorySerialization
+import javatypes.Trajectory
 
 object OcTreeAppBinary {
   def main(args:Array[String]):Unit={
@@ -47,8 +48,13 @@ object OcTreeAppBinary {
 
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
+
+
     val traj_dataset= try {
-      spark.read.parquet(path).as[Trajectory]
+
+      val encoder=Encoders.kryo(classOf[javatypes.Trajectory])
+
+      spark.read.parquet(path).as[javatypes.Trajectory](encoder)
     } catch {
       case _:AnalysisException=> spark.read.parquet(path).as[Segment]
     }

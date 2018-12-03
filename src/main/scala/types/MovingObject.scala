@@ -176,6 +176,8 @@ trait MovingObject {
 
 }
 
+abstract class MovingObjectWrapper extends MovingObject
+
   /*
 trait MovingObject(id: Long, trajectory: Array[CPointST], rowId:Long) {
 
