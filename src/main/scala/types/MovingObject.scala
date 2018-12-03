@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 
 trait MovingObject {
   def id: Long
-  def trajectory: Array[CPointST]
+  def trajectory: Array[PointST]
   def rowId:Long
 
   def getMean(): PointST = {
@@ -114,7 +114,7 @@ trait MovingObject {
     val coord:ArrayBuffer[Coordinate]=new ArrayBuffer[Coordinate]()
 
     while(i<trajectory.length){
-      coord.append(new Coordinate(trajectory(i).longitude, trajectory(i).latitude))
+      coord.append(new Coordinate(trajectory(i).getLongitude, trajectory(i).getLatitude))
       i=i+1
     }
 
@@ -127,7 +127,7 @@ trait MovingObject {
     //val coord:ArrayBuffer[Coordinate]=new ArrayBuffer[Coordinate]()
     var sum=0L
     while(i<trajectory.length){
-      sum=sum+(trajectory(i).timestamp-trajectory(i-1).timestamp)
+      sum=sum+(trajectory(i).getTimestamp-trajectory(i-1).getTimestamp)
       i=i+1
     }
     sum.toDouble/trajectory.length.toDouble
@@ -153,9 +153,9 @@ trait MovingObject {
 
   lazy val avg_speed:Double={
     (Distance.getEuclideanDistance(
-      trajectory.head.latitude,trajectory.head.longitude,
-      trajectory.last.latitude,trajectory.last.longitude)
-      / (trajectory.last.timestamp - trajectory.head.timestamp).toDouble) //*1.943844492
+      trajectory.head.getLatitude,trajectory.head.getLongitude,
+      trajectory.last.getLatitude,trajectory.last.getLongitude)
+      / (trajectory.last.getTimestamp - trajectory.head.getTimestamp).toDouble) //*1.943844492
 
   }
 
@@ -168,7 +168,7 @@ trait MovingObject {
 
 
     while (i<trajectory.length) {
-      arr(i)=Row(trajectory(i).longitude, trajectory(i).latitude, trajectory(i).timestamp)
+      arr(i)=Row(trajectory(i).getLongitude, trajectory(i).getLatitude, trajectory(i).getTimestamp)
       i=i+1
     }
     arr
