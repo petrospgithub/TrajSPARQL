@@ -47,22 +47,18 @@ object OcTreeAppBinary {
 
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
-    val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG)
-    val traj_dataset=spark.read.parquet(path)as encoder
-
-/*
     val traj_dataset= try {
 
-      val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG)
-      spark.read.parquet(path)as encoder
+      //val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG)
+      spark.read.parquet(path).as[Trajectory]
 
     } catch {
       case _:AnalysisException=>
-        val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG, Encoders.LONG)
+      //  val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG, Encoders.LONG)
        // spark.read.parquet(path)as encoder
-        spark.read.parquet(path)as encoder
+        spark.read.parquet(path).as[Segment]
     }
-*/
+
     val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])
 
     val broadcastBoundary=spark.sparkContext.broadcast(mbbst)
@@ -70,7 +66,7 @@ object OcTreeAppBinary {
     val enveEncoder = Encoders.kryo(classOf[EnvelopeST])
 
     val mbbSamplingList=traj_dataset.map(x=>{
-      TrajectoryToMBR.trajMBR(x._3, x._2)
+      x.mbbST
     })(enveEncoder).sample(withReplacement = true, fraction).collect() //TODO check fraction
 
     import scala.collection.JavaConverters._
