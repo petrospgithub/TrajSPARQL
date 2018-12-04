@@ -14,12 +14,7 @@ case class MbbST(var id:Long,minx:Double, maxx:Double, miny:Double, maxy:Double,
 
   def getCenter:PointST ={
 
-    val p=new PointST()
-
-    p.setLongitude((maxx+minx)/2)
-    p.setLatitude((maxy+miny)/2)
-    p.setTimestamp( (maxt+mint)/2)
-
+    val p=new PointST((maxx+minx)/2, (maxy+miny)/2, (maxt+mint)/2 )
     p
     //CPointST ((maxx+minx)/2, (maxy+miny)/2, (maxt+mint)/2)
   }

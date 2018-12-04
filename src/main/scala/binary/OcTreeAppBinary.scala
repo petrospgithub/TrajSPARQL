@@ -9,7 +9,7 @@ import index.SpatioTemporalIndex
 import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
 import spatiotemporal.STGrid
 import types._
-import utils.{TrajectorySerialization, TrajectoryToMBR}
+import utils.{MbbSerialization, TrajectorySerialization, TrajectoryToMBR}
 
 object OcTreeAppBinary {
   def main(args:Array[String]):Unit={
@@ -94,7 +94,7 @@ object OcTreeAppBinary {
       //println(x.wkt())
       i=i+1
     })
-/*
+
     val broadcastLeafs=spark.sparkContext.broadcast(list)
 
     val repartition = traj_dataset.map(mo => {
@@ -116,10 +116,10 @@ object OcTreeAppBinary {
 
       mo match {
         case _: Trajectory =>
-          PartitionerBlob(Some(mo.id), Some(TrajectorySerialization.serialize(mo.trajectory.asInstanceOf[Array[PointST]])), None, Some(mo.rowId), Some(partition_id))
+          PartitionerBlob(Some(mo.id), Some(TrajectorySerialization.serialize(mo.trajectory)), None, Some(mo.rowId), Some(partition_id))
 
         case _: Segment =>
-          PartitionerBlob(Some(mo.id),  Some(TrajectorySerialization.serialize(mo.trajectory.asInstanceOf[Array[PointST]])), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(partition_id))
+          PartitionerBlob(Some(mo.id),  Some(TrajectorySerialization.serialize(mo.trajectory)), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(partition_id))
       }
 
     })
@@ -135,8 +135,8 @@ object OcTreeAppBinary {
       }
     })
 
-    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_" + output + "_parquet")
-    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
+    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_binary_" + output + "_parquet")
+    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_binary_" + output + "_parquet")
 
 
     partitionMBB.repartition(1).mapPartitions(f=>{
@@ -146,7 +146,7 @@ object OcTreeAppBinary {
 
       while (f.hasNext) {
         val temp=f.next()
-        val envelope: EnvelopeST = new EnvelopeST(temp.box.get.minx, temp.box.get.maxx, temp.box.get.miny, temp.box.get.maxy, temp.box.get.mint, temp.box.get.maxt)
+        val envelope: EnvelopeST = MbbSerialization.deserialize(temp.box.get)
         envelope.setGid(temp.id.get)
         rtree3D.insert(envelope)
       }
@@ -163,9 +163,7 @@ object OcTreeAppBinary {
       out.close()
 
       Iterator(Tree(Some(yourBytes)))
-    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_" + output + "_parquet")
-*/
-
+    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_binary_" + output + "_parquet")
 
     spark.close()
     /*

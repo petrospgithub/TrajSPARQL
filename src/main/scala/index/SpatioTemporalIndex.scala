@@ -4,7 +4,7 @@ import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
-import spatial.partition.MBBindexST
+import spatial.partition.{MBBindexST, MBBindexSTBlob}
 import types.{MbbST, Partitioner, PartitionerBlob}
 
 object SpatioTemporalIndex {
@@ -89,7 +89,7 @@ object SpatioTemporalIndex {
     }
   }
 
-  def rtreeblob(it: Iterator[PartitionerBlob], datasetMBB: EnvelopeST, nodeCapacity: Int): MBBindexST = {
+  def rtreeblob(it: Iterator[PartitionerBlob], datasetMBB: EnvelopeST, nodeCapacity: Int): MBBindexSTBlob = {
     try {
       val row = it.next()
 
@@ -161,12 +161,26 @@ object SpatioTemporalIndex {
       out.close()
       /** *****************************/
 
-      val temp = MbbST(pid, minX, maxX, minY, maxY, minT, maxT)
+      val temp = new EnvelopeST(minX, maxX, minY, maxY, minT, maxT)
+      temp.setGid(pid)
 
-      MBBindexST(Some(pid), Some(temp), Some(yourBytes))
+      /** *****************************/
+
+      val bos2 = new ByteArrayOutputStream()
+      //  ObjectOutput out = null;
+      //  try {
+      val out2 = new ObjectOutputStream(bos2)
+      out2.writeObject(rtree3D)
+      out2.flush()
+      val yourBytes2 = bos.toByteArray.clone()
+
+      out2.close()
+      /** *****************************/
+
+      MBBindexSTBlob(Some(pid), Some(yourBytes2), Some(yourBytes))
 
     } catch {
-      case _: NoSuchElementException => MBBindexST(None, None, None)
+      case _: NoSuchElementException => MBBindexSTBlob(None, None, None)
     }
   }
 

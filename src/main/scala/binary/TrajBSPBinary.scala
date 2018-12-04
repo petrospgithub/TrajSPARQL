@@ -8,7 +8,7 @@ import di.thesis.indexing.types.{EnvelopeST, PointST}
 import index.SpatioTemporalIndex
 import org.apache.spark.sql._
 import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
-import utils.{ArraySearch, TrajectorySerialization}
+import utils.{ArraySearch, MbbSerialization, TrajectorySerialization}
 
 object TrajBSPBinary {
   def main(args: Array[String]): Unit = {
@@ -80,10 +80,10 @@ object TrajBSPBinary {
 
       mo match {
         case _: Trajectory =>
-          PartitionerBlob(Some(mo.id), Some(TrajectorySerialization.serialize(mo.trajectory.asInstanceOf[Array[PointST]])), None, Some(mo.rowId), Some(pid.hashCode))
+          PartitionerBlob(Some(mo.id), Some(TrajectorySerialization.serialize(mo.trajectory)), None, Some(mo.rowId), Some(pid.hashCode))
 
         case _: Segment =>
-          PartitionerBlob(Some(mo.id),  Some(TrajectorySerialization.serialize(mo.trajectory.asInstanceOf[Array[PointST]])), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(pid.hashCode))
+          PartitionerBlob(Some(mo.id),  Some(TrajectorySerialization.serialize(mo.trajectory)), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(pid.hashCode))
       }
 
     })
@@ -100,8 +100,8 @@ object TrajBSPBinary {
       }
     })
 
-    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
-    repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
+    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_binary_" + output + "_parquet")
+    repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_binary_" + output + "_parquet")
 
     partitionMBB.repartition(1).mapPartitions(f=>{
       val rtree3D: STRtree3D = new STRtree3D()
@@ -110,7 +110,7 @@ object TrajBSPBinary {
 
       while (f.hasNext) {
         val temp=f.next()
-        val envelope: EnvelopeST = new EnvelopeST(temp.box.get.minx, temp.box.get.maxx, temp.box.get.miny, temp.box.get.maxy, temp.box.get.mint, temp.box.get.maxt)
+        val envelope: EnvelopeST = MbbSerialization.deserialize(temp.box.get)
         envelope.setGid(temp.id.get)
         rtree3D.insert(envelope)
       }
@@ -127,7 +127,7 @@ object TrajBSPBinary {
       out.close()
 
       Iterator(Tree(Some(yourBytes)))
-    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_" + output + "_parquet")
+    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_binary_" + output + "_parquet")
 
     spark.stop()
 

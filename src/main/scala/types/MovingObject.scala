@@ -27,11 +27,7 @@ trait MovingObject {
       sumt=sumt+trajectory(i).getTimestamp
       i=i+1
     }
-    val pointst=new PointST()
-
-    pointst.setLongitude(sumx/trajectory.length)
-    pointst.setLatitude(sumy/trajectory.length)
-    pointst.setTimestamp(sumt/trajectory.length)
+    val pointst=new PointST(sumx/trajectory.length, sumy/trajectory.length, sumt/trajectory.length)
 
     pointst
   }
@@ -42,11 +38,7 @@ trait MovingObject {
         val point_a=trajectory(trajectory.length/2)
         val point_b=trajectory((trajectory.length/2) + 1)
 
-        val pointst=new PointST()
-
-        pointst.setLongitude((point_a.getLongitude+point_b.getLongitude)/2)
-        pointst.setLatitude((point_a.getLatitude+point_b.getLatitude)/2)
-        pointst.setTimestamp((point_a.getTimestamp+point_b.getTimestamp)/2)
+        val pointst=new PointST((point_a.getLongitude+point_b.getLongitude)/2, (point_a.getLatitude+point_b.getLatitude)/2, (point_a.getTimestamp+point_b.getTimestamp)/2)
 
         pointst
 
