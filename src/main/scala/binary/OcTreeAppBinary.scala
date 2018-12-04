@@ -9,7 +9,7 @@ import index.SpatioTemporalIndex
 import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
 import spatiotemporal.STGrid
 import types._
-import utils.TrajectorySerialization
+import utils.{TrajectorySerialization, TrajectoryToMBR}
 
 object OcTreeAppBinary {
   def main(args:Array[String]):Unit={
@@ -47,17 +47,22 @@ object OcTreeAppBinary {
 
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
+    val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG)
+    val traj_dataset=spark.read.parquet(path)as encoder
 
-
+/*
     val traj_dataset= try {
 
-      val encoder = Encoders.tuple(Encoders.LONG, Encoders.product[Array[PointST]], Encoders.LONG)
-      spark.read.parquet(path).as[Trajectory](Encoders.product[Trajectory])
+      val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG)
+      spark.read.parquet(path)as encoder
 
     } catch {
-      case _:AnalysisException=> spark.read.parquet(path).as[Segment]
+      case _:AnalysisException=>
+        val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG, Encoders.LONG)
+       // spark.read.parquet(path)as encoder
+        spark.read.parquet(path)as encoder
     }
-
+*/
     val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])
 
     val broadcastBoundary=spark.sparkContext.broadcast(mbbst)
@@ -65,7 +70,7 @@ object OcTreeAppBinary {
     val enveEncoder = Encoders.kryo(classOf[EnvelopeST])
 
     val mbbSamplingList=traj_dataset.map(x=>{
-      x.mbbST
+      TrajectoryToMBR.trajMBR(x._3, x._2)
     })(enveEncoder).sample(withReplacement = true, fraction).collect() //TODO check fraction
 
     import scala.collection.JavaConverters._
@@ -93,7 +98,7 @@ object OcTreeAppBinary {
       //println(x.wkt())
       i=i+1
     })
-
+/*
     val broadcastLeafs=spark.sparkContext.broadcast(list)
 
     val repartition = traj_dataset.map(mo => {
@@ -163,7 +168,7 @@ object OcTreeAppBinary {
 
       Iterator(Tree(Some(yourBytes)))
     }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_" + output + "_parquet")
-
+*/
 
 
     spark.close()
