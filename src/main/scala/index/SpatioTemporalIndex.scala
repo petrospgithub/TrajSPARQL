@@ -170,9 +170,9 @@ object SpatioTemporalIndex {
       //  ObjectOutput out = null;
       //  try {
       val out2 = new ObjectOutputStream(bos2)
-      out2.writeObject(rtree3D)
+      out2.writeObject(temp)
       out2.flush()
-      val yourBytes2 = bos.toByteArray.clone()
+      val yourBytes2 = bos2.toByteArray.clone()
 
       out2.close()
       /** *****************************/
