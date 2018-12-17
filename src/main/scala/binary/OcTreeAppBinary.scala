@@ -51,13 +51,13 @@ object OcTreeAppBinary {
     val traj_dataset= try {
 
       //val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG)
-      spark.read.parquet(path).as[Trajectory].sample(false, fraction_dataset)
+      spark.read.parquet(path).as[Trajectory].sample(withReplacement = false, fraction_dataset)
 
     } catch {
       case _:AnalysisException=>
       //  val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG, Encoders.LONG)
        // spark.read.parquet(path)as encoder
-        spark.read.parquet(path).as[Segment].sample(false, fraction_dataset)
+        spark.read.parquet(path).as[Segment].sample(withReplacement = false, fraction_dataset)
     }
 
     val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])
@@ -127,7 +127,7 @@ object OcTreeAppBinary {
 
     val partitions_counter = repartition.groupBy('pid).count()
 
-    partitions_counter.write.csv("octree_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
+    partitions_counter.write.csv("octree_binary_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
 
 
     val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({

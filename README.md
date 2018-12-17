@@ -111,3 +111,13 @@ target/TrajSPARQL-jar-with-dependencies.jar csv
 TIPS
 select regexp_replace(name, '[^\w]+','')
 from roads
+
+
+
+spark-submit --class binary.OcTreeAppBinary \
+ --properties-file "./config/traj_octree.properties" \
+ target/TrajSPARQL-jar-with-dependencies.jar
+ 
+ spark-submit --class binary.OcTreeAppBinaryStoreTraj \
+  --properties-file "./config/traj_octree.properties" \
+  target/TrajSPARQL-jar-with-dependencies.jar
