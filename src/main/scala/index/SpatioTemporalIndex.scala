@@ -6,6 +6,7 @@ import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.EnvelopeST
 import spatial.partition.{MBBindexST, MBBindexSTBlob}
 import types.{MbbST, Partitioner, PartitionerBlob}
+import utils.TrajectorySerialization
 
 object SpatioTemporalIndex {
   def rtree(it: Iterator[Partitioner], datasetMBB: EnvelopeST, nodeCapacity: Int): MBBindexST = {
@@ -280,7 +281,7 @@ object SpatioTemporalIndex {
 
       envelope.setGid(rowId)
 
-      rtree3D.insert(envelope, row.trajectory.get)
+      rtree3D.insert(envelope, TrajectorySerialization.deserialize(row.trajectory.get))
       var minX = envelope.getMinX
       var minY = envelope.getMinY
 
@@ -297,7 +298,7 @@ object SpatioTemporalIndex {
         val envelope: EnvelopeST = row.mbbST
         envelope.setGid(row.rowId.get)
 
-        rtree3D.insert(envelope, row.trajectory.get)
+        rtree3D.insert(envelope, TrajectorySerialization.deserialize(row.trajectory.get))
 
         if (minX > envelope.getMinX) {
           minX = envelope.getMinX
