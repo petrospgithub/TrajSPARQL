@@ -9,9 +9,9 @@ import index.SpatioTemporalIndex
 import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
 import spatiotemporal.STGrid
 import types._
-import utils.{MbbSerialization, TrajectorySerialization, TrajectoryToMBR}
+import utils.{MbbSerialization, TrajectorySerialization}
 
-object OcTreeAppBinary {
+object OcTreeAppBinaryStoreTraj {
   def main(args:Array[String]):Unit={
 
     val spark = SparkSession.builder
@@ -55,8 +55,8 @@ object OcTreeAppBinary {
 
     } catch {
       case _:AnalysisException=>
-      //  val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG, Encoders.LONG)
-       // spark.read.parquet(path)as encoder
+        //  val encoder = Encoders.tuple(Encoders.LONG, Encoders.kryo[Array[PointST]], Encoders.LONG, Encoders.LONG)
+        // spark.read.parquet(path)as encoder
         spark.read.parquet(path).as[Segment].sample(false, fraction_dataset)
     }
 
@@ -132,7 +132,7 @@ object OcTreeAppBinary {
 
     val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({
       (id, it) => {
-        SpatioTemporalIndex.rtreeblob(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+        SpatioTemporalIndex.rtreeblob_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
       }
     })
 
@@ -184,10 +184,3 @@ object OcTreeAppBinary {
     */
   }
 }
-
-
-
-/*
-/bin/spark-submit --properties-file "./config/traj_octree.properties" --class apps.OcTreeApp ./target/TrajSPARQL-jar-with-dependencies.jar
-
- */

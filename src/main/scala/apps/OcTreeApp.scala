@@ -41,15 +41,18 @@ object OcTreeApp {
     val maxItemByNode=prop.get("spark.maxitembynode").toInt
     val maxLevel=prop.get("spark.maxlevel").toInt
 
+
+    val fraction_dataset=prop.get("spark.fraction_dataset").toDouble
+
     val rtree_nodeCapacity=prop.get("spark.localindex_nodecapacity").toInt
     import spark.implicits._
 
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
     val traj_dataset= try {
-      spark.read.parquet(path).as[Trajectory]
+      spark.read.parquet(path).as[Trajectory].sample(false, fraction_dataset)
     } catch {
-      case _:AnalysisException=> spark.read.parquet(path).as[Segment]
+      case _:AnalysisException=> spark.read.parquet(path).as[Segment].sample(false, fraction_dataset)
     }
 
     val mbbst:EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])

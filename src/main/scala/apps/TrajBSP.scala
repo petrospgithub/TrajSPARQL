@@ -43,6 +43,7 @@ object TrajBSP {
 
     val t_sideLength = prop.get("spark.t_sidelength").toInt
     val rtree_nodeCapacity = prop.get("spark.localindex_nodecapacity").toInt
+    val fraction_dataset = prop.get("spark.fraction_dataset").toDouble
 
 
     import spark.implicits._
@@ -51,9 +52,9 @@ object TrajBSP {
     val broadcastrtree_nodeCapacity = spark.sparkContext.broadcast(rtree_nodeCapacity)
 
     val traj_dataset = try {
-      spark.read.parquet(path).as[Trajectory]
+      spark.read.parquet(path).as[Trajectory].sample(false, fraction_dataset)
     } catch {
-      case _: AnalysisException => spark.read.parquet(path).as[Segment]
+      case _: AnalysisException => spark.read.parquet(path).as[Segment].sample(false, fraction_dataset)
     }
 
     val mbbst: EnvelopeST = STGrid.getMinMax(traj_dataset = traj_dataset.asInstanceOf[Dataset[MovingObject]])
