@@ -66,9 +66,9 @@ object OcTreeAppBinaryStoreTraj {
 
     val enveEncoder = Encoders.kryo(classOf[EnvelopeST])
 
-    val mbbSamplingList=traj_dataset.map(x=>{
+    val mbbSamplingList=traj_dataset.sample(withReplacement = true, fraction).map(x=>{
       x.mbbST
-    })(enveEncoder).sample(withReplacement = true, fraction).collect() //TODO check fraction
+    })(enveEncoder).collect()
 
     import scala.collection.JavaConverters._
 

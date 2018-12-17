@@ -50,7 +50,7 @@ object OcTreeApp {
     val broadcastrtree_nodeCapacity=spark.sparkContext.broadcast(rtree_nodeCapacity)
 
     val traj_dataset= try {
-      spark.read.parquet(path).as[Trajectory].sample(false, fraction_dataset)
+      spark.read.parquet(path).as[Trajectory].sample(true, fraction_dataset)
     } catch {
       case _:AnalysisException=> spark.read.parquet(path).as[Segment].sample(false, fraction_dataset)
     }
@@ -61,9 +61,9 @@ object OcTreeApp {
 
     val enveEncoder = Encoders.kryo(classOf[EnvelopeST])
 
-    val mbbSamplingList=traj_dataset.map(x=>{
+    val mbbSamplingList=traj_dataset.sample(withReplacement = true, fraction).map(x=>{
       x.mbbST
-    })(enveEncoder).sample(withReplacement = true, fraction).collect() //TODO check fraction
+    })(enveEncoder).collect()
 
     import scala.collection.JavaConverters._
 
