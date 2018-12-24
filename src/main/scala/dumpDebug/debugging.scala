@@ -1,3 +1,5 @@
+package dumpDebug
+
 import di.thesis.indexing.octree.OctreePartitioning
 import di.thesis.indexing.types.{EnvelopeST, PointST}
 import org.apache.spark.sql.{AnalysisException, Dataset, Encoders, SparkSession}
@@ -10,6 +12,8 @@ object debugging {
     val spark = SparkSession.builder
       .appName("TrajectoryOctree")//.master("local[*]")
       .getOrCreate()
+
+    spark.sparkContext.setLogLevel("WARN")
 
     val prop=spark.sparkContext.getConf
     val output = prop.get("spark.output")
