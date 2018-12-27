@@ -26,7 +26,7 @@ class CreateTables  extends FunSuite {
 
     /* Array + Struct */
 
-    create = " CREATE EXTERNAL TABLE oasa400_temp(  obj_id BIGINT,  trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_oasa400_parquet' "
+    create = " CREATE EXTERNAL TABLE oasa400_temp(  id BIGINT,  trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_oasa400_parquet' "
 
     stmt.execute(create)
 
@@ -39,7 +39,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_oasa400( obj_id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_oasa400( id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -48,7 +48,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    insert = " INSERT INTO trajectories_oasa400 SELECT obj_id, trajectory, rowId, pid FROM oasa400_temp  "
+    insert = " INSERT INTO trajectories_oasa400 SELECT id, trajectory, rowId, pid FROM oasa400_temp  "
 
     stmt.execute(insert)
 
@@ -67,7 +67,7 @@ class CreateTables  extends FunSuite {
 
     /* Binary */
 
-    create = " CREATE EXTERNAL TABLE oasa400_temp_binary (  obj_id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_binary_oasa400_parquet' "
+    create = " CREATE EXTERNAL TABLE oasa400_temp_binary (  id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_binary_oasa400_parquet' "
 
     stmt.execute(create)
 
@@ -80,7 +80,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_oasa400_binary ( obj_id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_oasa400_binary ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -89,7 +89,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    insert = " INSERT INTO trajectories_oasa400_binary SELECT obj_id, trajectory, rowId, pid FROM oasa400_temp_binary  "
+    insert = " INSERT INTO trajectories_oasa400_binary SELECT id, trajectory, rowId, pid FROM oasa400_temp_binary  "
 
     stmt.execute(insert)
 
@@ -108,7 +108,7 @@ class CreateTables  extends FunSuite {
 
     /* Binary store trajectories @ index */
 
-    create = " CREATE EXTERNAL TABLE oasa400_temp_binaryTraj (  obj_id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_traj_repartition_binary_oasa400_parquet' "
+    create = " CREATE EXTERNAL TABLE oasa400_temp_binaryTraj (  id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_traj_repartition_binary_oasa400_parquet' "
 
     stmt.execute(create)
 
@@ -121,7 +121,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_oasa400_binaryTraj ( obj_id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_oasa400_binaryTraj ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -130,7 +130,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    insert = " INSERT INTO trajectories_oasa400_binaryTraj SELECT obj_id, trajectory, rowId, pid FROM oasa400_temp_binary  "
+    insert = " INSERT INTO trajectories_oasa400_binaryTraj SELECT id, trajectory, rowId, pid FROM oasa400_temp_binary  "
 
     stmt.execute(insert)
 
@@ -191,7 +191,7 @@ class CreateTables  extends FunSuite {
 
     /* Array + Struct */
 
-    create = " CREATE EXTERNAL TABLE imis400_temp(  obj_id BIGINT,  trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_imis400_parquet' "
+    create = " CREATE EXTERNAL TABLE imis400_temp(  id BIGINT,  trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_imis400_parquet' "
 
     stmt.execute(create)
 
@@ -204,7 +204,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400( obj_id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400( id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -213,7 +213,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    insert = " INSERT INTO trajectories_imis400 SELECT obj_id, trajectory, rowId, pid FROM imis400_temp  "
+    insert = " INSERT INTO trajectories_imis400 SELECT id, trajectory, rowId, pid FROM imis400_temp  "
 
     stmt.execute(insert)
 
@@ -232,7 +232,7 @@ class CreateTables  extends FunSuite {
 
     /* Binary */
 
-    create = " CREATE EXTERNAL TABLE imis400_temp_binary (  obj_id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_binary_imis400_parquet' "
+    create = " CREATE EXTERNAL TABLE imis400_temp_binary (  id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_binary_imis400_parquet' "
 
     stmt.execute(create)
 
@@ -245,7 +245,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400_binary ( obj_id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400_binary ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -254,7 +254,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    insert = " INSERT INTO trajectories_imis400_binary SELECT obj_id, trajectory, rowId, pid FROM imis400_temp_binary  "
+    insert = " INSERT INTO trajectories_imis400_binary SELECT id, trajectory, rowId, pid FROM imis400_temp_binary  "
 
     stmt.execute(insert)
 
@@ -273,7 +273,7 @@ class CreateTables  extends FunSuite {
 
     /* Binary store trajectories @ index */
 
-    create = " CREATE EXTERNAL TABLE imis400_temp_binaryTraj (  obj_id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_traj_repartition_binary_imis400_parquet' "
+    create = " CREATE EXTERNAL TABLE imis400_temp_binaryTraj (  id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_traj_repartition_binary_imis400_parquet' "
 
     stmt.execute(create)
 
@@ -286,7 +286,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400_binaryTraj ( obj_id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400_binaryTraj ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 20 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -295,7 +295,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    insert = " INSERT INTO trajectories_imis400_binaryTraj SELECT obj_id, trajectory, rowId, pid FROM imis400_temp_binary  "
+    insert = " INSERT INTO trajectories_imis400_binaryTraj SELECT id, trajectory, rowId, pid FROM imis400_temp_binary  "
 
     stmt.execute(insert)
 
