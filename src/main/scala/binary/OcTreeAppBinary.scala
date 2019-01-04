@@ -188,6 +188,9 @@ object OcTreeAppBinary {
 
 
 /*
-/bin/spark-submit --properties-file "./config/traj_octree.properties" --class apps.OcTreeApp ./target/TrajSPARQL-jar-with-dependencies.jar
+
+/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file "./config/traj_octree.properties" --class apps.OcTreeApp ./target/TrajSPARQL-jar-with-dependencies.jar
+/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file "./config/traj_octree.properties" --class binary.OcTreeAppBinary ./target/TrajSPARQL-jar-with-dependencies.jar
+/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file "./config/traj_octree.properties" --class binary.OcTreeAppBinaryStoreTraj ./target/TrajSPARQL-jar-with-dependencies.jar
 
  */

@@ -20,7 +20,7 @@ class RangeQueries  extends FunSuite {
 
   def rangeArrStruct_BF():Long={
 
-    rs=Some(stmt.executeQuery("select box from index_oasa400_binary distribute by rand() sort by rand() limit 1"))
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     while (rs.get.next()) {
       val obj=rs.get.getObject(1)
@@ -31,7 +31,7 @@ class RangeQueries  extends FunSuite {
 
     val start=System.currentTimeMillis()
 
-    val sql = " SELECT rowId FROM oasa400_temp" +
+    val sql = " SELECT rowId FROM imis400_temp" +
       " WHERE ST_Intersects3D(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0) "
         .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
@@ -42,7 +42,7 @@ class RangeQueries  extends FunSuite {
 
   def rangeArrStruct_index():Long={
 
-    rs=Some(stmt.executeQuery("select box from index_oasa400_binary distribute by rand() sort by rand() limit 1"))
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     while (rs.get.next()) {
       val obj=rs.get.getObject(1)
@@ -53,10 +53,33 @@ class RangeQueries  extends FunSuite {
 
     val start=System.currentTimeMillis()
 
-    val sql = " SELECT * FROM trajectories_oasa400 as a INNER JOIN " +
+    val sql = " SELECT * FROM trajectories_imis400 as a INNER JOIN " +
       " (SELECT ST_IndexIntersects(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) " .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-      " FROM index_oasa400 WHERE ST_Intersects3D(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ) , box, 0.1, 0.1, 0.1, 0.1, 0, 0)) as b" .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
+      " FROM index_imis400 ) as b" +
       "  ON (b.trajectory_id=a.rowId) " +
+      " WHERE ST_Intersects3D(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  "
+        .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
+
+
+    stmt.execute(sql)
+    System.currentTimeMillis()-start
+  }
+
+  def rangeArrStruct_index_pid():Long={
+
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
+
+    while (rs.get.next()) {
+      val obj=rs.get.getObject(1)
+
+      env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
+
+    }
+
+    val start=System.currentTimeMillis()
+
+    val sql = " SELECT * FROM trajectories_imis400_pid as a INNER JOIN " +
+      "(SELECT ST_IndexIntersects(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400) as b ON (b.trajectory_id=a.pid) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
       " WHERE ST_Intersects3D(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  "
         .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
@@ -67,7 +90,7 @@ class RangeQueries  extends FunSuite {
 
   def rangeBinary_BF():Long={
 
-    rs=Some(stmt.executeQuery("select box from index_oasa400_binary distribute by rand() sort by rand() limit 1"))
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     while (rs.get.next()) {
       val obj=rs.get.getObject(1)
@@ -80,7 +103,7 @@ class RangeQueries  extends FunSuite {
     val start=System.currentTimeMillis()
 
     val sql = " SELECT rowId " +
-      " FROM oasa400_temp_binary " +
+      " FROM imis400_temp_binary " +
       " WHERE ST_Intersects3DBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0) "
         .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
@@ -90,7 +113,7 @@ class RangeQueries  extends FunSuite {
   }
 
   def rangeBinary_index():Long={
-    rs=Some(stmt.executeQuery("select box from index_oasa400_binary distribute by rand() sort by rand() limit 1"))
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     while (rs.get.next()) {
       val obj=rs.get.getObject(1)
@@ -101,10 +124,31 @@ class RangeQueries  extends FunSuite {
 
     val start=System.currentTimeMillis()
 
-    val sql = " SELECT * FROM trajectories_oasa400_binary as a INNER JOIN " +
+    val sql = " SELECT * FROM trajectories_imis400_binary as a INNER JOIN " +
       " (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) " .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-      " FROM index_oasa400_binary WHERE ST_Intersects3DBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), box, 0.1, 0.1, 0.1, 0.1, 0, 0)) as b " .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
+      " FROM index_imis400_binary ) as b " +
       " ON (b.trajectory_id=a.rowId) " +
+      " WHERE ST_Intersects3DBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  "
+        .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
+
+    stmt.execute(sql)
+    System.currentTimeMillis()-start
+  }
+
+  def rangeBinary_index_pid():Long={
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
+
+    while (rs.get.next()) {
+      val obj=rs.get.getObject(1)
+
+      env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
+
+    }
+
+    val start=System.currentTimeMillis()
+
+    val sql = " SELECT * FROM trajectories_imis400_binary_pid as a INNER JOIN " +
+      "(SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as b ON (b.trajectory_id=a.pid) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
       " WHERE ST_Intersects3DBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  "
         .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
@@ -114,7 +158,7 @@ class RangeQueries  extends FunSuite {
 
   def rangeBinaryTraj():Long={
 
-    rs=Some(stmt.executeQuery("select box from index_oasa400_binary distribute by rand() sort by rand() limit 1"))
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     while (rs.get.next()) {
       val obj=rs.get.getObject(1)
@@ -127,7 +171,7 @@ class RangeQueries  extends FunSuite {
     val start=System.currentTimeMillis()
 
     val sql="SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) " .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-      " FROM index_oasa400_binaryTraj "
+      " FROM index_imis400_binaryTraj "
 
     stmt.execute(sql)
 
@@ -178,9 +222,11 @@ class RangeQueries  extends FunSuite {
 
     val buffer_rangeArrStructBF=new ArrayBuffer[Long]
     val buffer_rangeArrStruct_INDEX=new ArrayBuffer[Long]
+    val buffer_rangeArrStruct_PID=new ArrayBuffer[Long]
 
     val buffer_rangeBinary_BF=new ArrayBuffer[Long]
     val buffer_rangeBinary_INDEX=new ArrayBuffer[Long]
+    val buffer_rangeBinary_PID=new ArrayBuffer[Long]
 
 
     val buffer_rangeBinaryTraj=new ArrayBuffer[Long]
@@ -199,6 +245,15 @@ class RangeQueries  extends FunSuite {
     while (i < 3) {
 
       buffer_rangeArrStruct_INDEX.append(rangeArrStruct_index())
+
+      i=i+1
+    }
+
+    i=0
+
+    while (i < 3) {
+
+      buffer_rangeArrStruct_PID.append(rangeArrStruct_index_pid())
 
       i=i+1
     }
@@ -226,6 +281,15 @@ class RangeQueries  extends FunSuite {
 
     i=0
 
+    while (i < 3) {
+
+      buffer_rangeBinary_PID.append(rangeBinary_index_pid())
+
+      i=i+1
+    }
+
+    i=0
+
     while (i<3) {
 
       buffer_rangeBinaryTraj.append(rangeBinaryTraj())
@@ -241,7 +305,7 @@ class RangeQueries  extends FunSuite {
     println("Binary mean time: "+ buffer_rangeBinary_BF.sum /buffer_rangeBinary_BF.length.toDouble)
     println("Binary index mean time: "+ buffer_rangeBinary_INDEX.sum /buffer_rangeBinary_INDEX.length.toDouble)
 
-    println("Binary mean time: "+ buffer_rangeBinaryTraj.sum /buffer_rangeBinaryTraj.length.toDouble)
+    println("Binary traj mean time: "+ buffer_rangeBinaryTraj.sum /buffer_rangeBinaryTraj.length.toDouble)
   }
 }
 
