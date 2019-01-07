@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /*
-nohup apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hiveconf hive.root.logger=INFO,console --hiveconf mapreduce.map.memory.mb=6144 --hiveconf mapreduce.map.java.opts=-Xmx8192m --hiveconf mapreduce.reduce.memory.mb=6144 --hiveconf mapreduce.reduce.java.opts=-Xmx8192m > hiveserver.out &
+nohup /root/apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hiveconf hive.root.logger=INFO,console --hiveconf mapreduce.map.memory.mb=6144 --hiveconf mapreduce.map.java.opts=-Xmx8192m --hiveconf mapreduce.reduce.memory.mb=6144 --hiveconf mapreduce.reduce.java.opts=-Xmx8192m > hiveserver.out &
 
 
 ss -lptn 'sport = :10000'
@@ -24,6 +24,11 @@ class CreateTables  extends FunSuite {
     var create = ""
     var insert = ""
 
+    //mvn test -Dtest=HelloWorldTesting -q -DargLine="-Dbuckets=100 "
+
+    val buckets_num = Integer.valueOf(System.getProperty("buckets"))
+
+
     /* Array + Struct */
 
     create = " CREATE EXTERNAL TABLE imis400_temp(  id BIGINT,  trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_repartition_imis400_parquet' "
@@ -39,15 +44,15 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400( id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400( id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400_pid( id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (pid) SORTED BY (rowId) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400_pid( id BIGINT, " + " trajectory ARRAY<STRUCT<longitude:DOUBLE, latitude:DOUBLE, `timestamp`:BIGINT >>,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (pid) SORTED BY (pid) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
-    create = " CREATE TABLE index_imis400(  id BIGINT,  box STRUCT<id:BIGINT, minx:DOUBLE, maxx:DOUBLE, miny:DOUBLE, maxy:DOUBLE, mint:BIGINT, maxt:BIGINT >,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE index_imis400(  id BIGINT,  box STRUCT<id:BIGINT, minx:DOUBLE, maxx:DOUBLE, miny:DOUBLE, maxy:DOUBLE, mint:BIGINT, maxt:BIGINT >,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -83,15 +88,15 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400_binary ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400_binary ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400_binary_pid ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (pid) SORTED BY (rowId) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400_binary_pid ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (pid) SORTED BY (pid) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
-    create = " CREATE TABLE index_imis400_binary (  id BIGINT,  box BINARY,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE index_imis400_binary (  id BIGINT,  box BINARY,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
@@ -127,12 +132,12 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    create = " CREATE TABLE trajectories_imis400_binaryTraj ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE trajectories_imis400_binaryTraj ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 
 
-    create = " CREATE TABLE index_imis400_binaryTraj (  id BIGINT,  box BINARY,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO 100 BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
+    create = " CREATE TABLE index_imis400_binaryTraj (  id BIGINT,  box BINARY,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
 

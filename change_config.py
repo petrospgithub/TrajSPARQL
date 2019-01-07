@@ -12,6 +12,22 @@ dataset_sample = [('0.20', 12),
                   ('0.80', 3),
                   ('0.90', 0)]
 
+patterns = ['192.168.0.20',
+            '192.168.0.19',
+            '192.168.0.18',
+            '192.168.0.17',
+            '192.168.0.16',
+            '192.168.0.15',
+            '192.168.0.14',
+            '192.168.0.13',
+            '192.168.0.12',
+            '192.168.0.11',
+            '192.168.0.10',
+            '192.168.0.9',
+            '192.168.0.8',
+            '192.168.0.7',
+            '192.168.0.5']
+
 myfile = '/root/hadoop-3.1.1/etc/hadoop/yarn.exclude'
 
 f=open(myfile, 'w')
@@ -63,3 +79,10 @@ for d in dataset_sample:
 
     config.write(cfgfile)
     cfgfile.close()
+
+
+'''
+mvn test -Dtest=CreateTables -q
+
+mvn test -Dtest=DropTables -q
+'''
