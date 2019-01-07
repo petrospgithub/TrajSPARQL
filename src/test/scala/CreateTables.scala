@@ -24,7 +24,7 @@ class CreateTables  extends FunSuite {
     var create = ""
     var insert = ""
 
-    //mvn test -Dtest=HelloWorldTesting -q -DargLine="-Dbuckets=100 "
+    //mvn test -Dtest=CreateTables -q -DargLine="-Dbuckets=100 "
 
     val buckets_num = Integer.valueOf(System.getProperty("buckets"))
 

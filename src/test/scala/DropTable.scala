@@ -27,5 +27,11 @@ class DropTable extends FunSuite {
     stmt.execute("DROP TABLE trajectories_imis400_binary ")
     stmt.execute("DROP TABLE trajectories_imis400_binarytraj ")
 
+
+    stmt.execute("DROP TABLE trajectories_imis400_binary_pid ")
+
+    stmt.execute("DROP TABLE trajectories_imis400_pid ")
+
+
   }
 }
