@@ -46,7 +46,7 @@ os.system("nohup /root/apache-hive-2.3.3-bin/bin/hive --service metastore > meta
 
 time.sleep(10)
 
-os.system("nohup /root/apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hiveconf hive.root.logger=INFO,console --hiveconf mapreduce.map.memory.mb=6144 --hiveconf mapreduce.map.java.opts=-Xmx8192m --hiveconf mapreduce.reduce.memory.mb=6144 --hiveconf mapreduce.reduce.java.opts=-Xmx8192m > hiveserver.out &")
+os.system("nohup /root/apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hiveconf hive.root.logger=INFO,console --hiveconf mapreduce.map.memory.mb=6144 --hiveconf mapreduce.map.java.opts=-Xmx8192m --hiveconf mapreduce.reduce.memory.mb=6144 --hiveconf mapreduce.reduce.java.opts=-Xmx8192m --hiveconf hive.aux.jars.path=file:///root/implementation/HiveTrajSPARQL/target/HiveTrajSPARQL-jar-with-dependencies.jar  > hiveserver.out &")
 
 time.sleep(10)
 

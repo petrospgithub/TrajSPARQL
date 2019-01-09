@@ -169,17 +169,25 @@ class RangeQueries  extends FunSuite {
 
     val start=System.currentTimeMillis()
 
-    val sql=" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0).trajectory_id FROM index_imis400_temp_binaryTraj "
+    val sql=" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM index_imis400_temp_binaryTraj "
       .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
-    stmt.execute(sql)
+    rs=Some(stmt.executeQuery(sql))
+
+    while (rs.get.next()) {
+      val obj=rs.get.getObject(1)
+
+     // env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
+
+    }
+
 
     System.currentTimeMillis()-start  }
 
 
   test("Thesis range queries") {
 
-    stmt.execute(" ADD JAR hdfs:///user/root/hiveThesis/HiveTrajSPARQL-jar-with-dependencies.jar ")
+    //stmt.execute(" ADD JAR hdfs:///user/root/hiveThesis/HiveTrajSPARQL-jar-with-dependencies.jar ")
 
     stmt.execute(" SET hive.auto.convert.join=true ")
     stmt.execute(" SET hive.enforce.bucketing=true ")
@@ -231,7 +239,7 @@ class RangeQueries  extends FunSuite {
     val buffer_rangeBinaryTraj=new ArrayBuffer[Long]
 
     var i=0
-
+/*
     while (i < 3) {
 
       buffer_rangeArrStructBF.append(rangeArrStruct_BF())
@@ -286,10 +294,10 @@ class RangeQueries  extends FunSuite {
 
       i=i+1
     }
-
+*/
     i=0
 
-    while (i < 3) {
+    while (i < 1) {
 
       buffer_rangeBinaryTraj.append(rangeBinaryTraj())
 
