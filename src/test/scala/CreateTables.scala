@@ -135,7 +135,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-
+/*
     create = " CREATE TABLE index_imis400_binaryTraj (  id BIGINT,  box BINARY,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
@@ -147,12 +147,9 @@ class CreateTables  extends FunSuite {
     insert = " INSERT INTO index_imis400_binaryTraj SELECT id, box, tree FROM index_imis400_temp_binaryTraj "
 
     stmt.execute(insert)
-
+*/
     stmt.execute("analyze table trajectories_imis400_binaryTraj compute statistics")
     stmt.execute("analyze table trajectories_imis400_binaryTraj compute statistics for columns")
-
-    stmt.execute("analyze table index_imis400_binaryTraj compute statistics")
-    stmt.execute("analyze table index_imis400_binaryTraj compute statistics for columns")
 
     /* Binary store trajectories @ index */
 
