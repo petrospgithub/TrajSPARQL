@@ -7,7 +7,6 @@ import org.scalatest.junit.JUnitRunner
 /*
 nohup /root/apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hiveconf hive.root.logger=INFO,console --hiveconf mapreduce.map.memory.mb=6144 --hiveconf mapreduce.map.java.opts=-Xmx8192m --hiveconf mapreduce.reduce.memory.mb=6144 --hiveconf mapreduce.reduce.java.opts=-Xmx8192m > hiveserver.out &
 
-
 ss -lptn 'sport = :10000'
 
  */
@@ -24,7 +23,7 @@ class CreateTables  extends FunSuite {
     var create = ""
     var insert = ""
 
-    //mvn test -Dtest=CreateTables -q -DargLine="-Dbuckets=100 "
+    //mvn test -Dtest=CreateTables -q -DargLine="-Dbuckets=100"
 
     val buckets_num = Integer.valueOf(System.getProperty("buckets"))
 
@@ -141,7 +140,7 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-    insert = " INSERT INTO trajectories_imis400_binaryTraj SELECT id, trajectory, rowId, pid FROM imis400_temp_binaryTraj  "
+    insert = " INSERT INTO trajectories_imis400_binaryTraj SELECT id, trajectory, rowId, pid FROM imis400_temp_binaryTraj "
 
     stmt.execute(insert)
 

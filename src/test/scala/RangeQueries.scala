@@ -80,8 +80,7 @@ class RangeQueries  extends FunSuite {
 
     val sql = " SELECT * FROM trajectories_imis400_pid as a INNER JOIN " +
       "(SELECT ST_IndexIntersects(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400) as b ON (b.trajectory_id=a.pid) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-      " WHERE ST_Intersects3D(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  "
-        .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
+      " WHERE ST_Intersects3D(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
 
     stmt.execute(sql)
@@ -170,8 +169,8 @@ class RangeQueries  extends FunSuite {
 
     val start=System.currentTimeMillis()
 
-    val sql="SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) " .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-      " FROM index_imis400_binaryTraj "
+    val sql=" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0).trajectory_id FROM index_imis400_temp_binaryTraj "
+      .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
     stmt.execute(sql)
 
@@ -180,7 +179,7 @@ class RangeQueries  extends FunSuite {
 
   test("Thesis range queries") {
 
-    stmt.execute("ADD JAR hdfs:///user/root/hiveThesis/HiveTrajSPARQL-jar-with-dependencies.jar")
+    stmt.execute(" ADD JAR hdfs:///user/root/hiveThesis/HiveTrajSPARQL-jar-with-dependencies.jar ")
 
     stmt.execute(" SET hive.auto.convert.join=true ")
     stmt.execute(" SET hive.enforce.bucketing=true ")
@@ -290,7 +289,7 @@ class RangeQueries  extends FunSuite {
 
     i=0
 
-    while (i<3) {
+    while (i < 3) {
 
       buffer_rangeBinaryTraj.append(rangeBinaryTraj())
 
@@ -298,12 +297,13 @@ class RangeQueries  extends FunSuite {
 
     }
 
-
     println("Arr struct mean time: "+ buffer_rangeArrStructBF.sum /buffer_rangeArrStructBF.length.toDouble)
     println("Arr struct index mean time: "+ buffer_rangeArrStruct_INDEX.sum /buffer_rangeArrStruct_INDEX.length.toDouble)
+    println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
 
     println("Binary mean time: "+ buffer_rangeBinary_BF.sum /buffer_rangeBinary_BF.length.toDouble)
     println("Binary index mean time: "+ buffer_rangeBinary_INDEX.sum /buffer_rangeBinary_INDEX.length.toDouble)
+    println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
 
     println("Binary traj mean time: "+ buffer_rangeBinaryTraj.sum /buffer_rangeBinaryTraj.length.toDouble)
   }
