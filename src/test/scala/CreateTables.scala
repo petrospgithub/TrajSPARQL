@@ -117,16 +117,16 @@ class CreateTables  extends FunSuite {
 
 
     /* Binary store trajectories @ index */
-
+/*
     create = " CREATE EXTERNAL TABLE imis400_temp_binaryTraj (  id BIGINT,  trajectory BINARY,  traj_id BIGINT,  rowId BIGINT,  pid BIGINT) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_traj_repartition_binary_imis400_parquet' "
 
     stmt.execute(create)
-
+*/
     create = " CREATE EXTERNAL TABLE index_imis400_temp_binaryTraj (  id BIGINT,  box BINARY,  tree BINARY ) STORED AS PARQUET LOCATION 'hdfs:///user/root/octree_traj_partitionMBBDF_binary_imis400_parquet' "
 
     stmt.execute(create)
 
-
+/*
     create = " CREATE EXTERNAL TABLE partition_index_imis400_binaryTraj (tree BINARY )  STORED AS PARQUET LOCATION 'hdfs:///user/root/partitions_traj_tree_binary_imis400_parquet' "
 
     stmt.execute(create)
@@ -134,22 +134,26 @@ class CreateTables  extends FunSuite {
     create = " CREATE TABLE trajectories_imis400_binaryTraj ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
+*/
 
-/*
     create = " CREATE TABLE index_imis400_binaryTraj (  id BIGINT,  box BINARY,  tree BINARY )  CLUSTERED BY (id) SORTED BY (id) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
-
+/*
     insert = " INSERT INTO trajectories_imis400_binaryTraj SELECT id, trajectory, rowId, pid FROM imis400_temp_binaryTraj "
 
     stmt.execute(insert)
-
+*/
     insert = " INSERT INTO index_imis400_binaryTraj SELECT id, box, tree FROM index_imis400_temp_binaryTraj "
 
     stmt.execute(insert)
-*/
-    stmt.execute("analyze table trajectories_imis400_binaryTraj compute statistics")
-    stmt.execute("analyze table trajectories_imis400_binaryTraj compute statistics for columns")
+
+   // stmt.execute("analyze table trajectories_imis400_binaryTraj compute statistics")
+   // stmt.execute("analyze table trajectories_imis400_binaryTraj compute statistics for columns")
+
+    stmt.execute("analyze table index_imis400_binaryTraj compute statistics")
+    stmt.execute("analyze table index_imis400_binaryTraj compute statistics for columns")
+
 
     /* Binary store trajectories @ index */
 

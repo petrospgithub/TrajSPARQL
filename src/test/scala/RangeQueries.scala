@@ -169,20 +169,50 @@ class RangeQueries  extends FunSuite {
 
     val start=System.currentTimeMillis()
 
-    val sql=" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM index_imis400_temp_binaryTraj "
-      .format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
+    val sql=" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM index_imis400_temp_binaryTraj ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
     rs=Some(stmt.executeQuery(sql))
 
     while (rs.get.next()) {
       val obj=rs.get.getObject(1)
-
+      println(obj)
      // env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
 
     }
 
 
-    System.currentTimeMillis()-start  }
+    System.currentTimeMillis()-start
+  }
+
+  def rangeBinaryTraj_Part():Long={
+
+    rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
+
+    while (rs.get.next()) {
+      val obj=rs.get.getObject(1)
+
+      env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
+
+    }
+
+
+    val start=System.currentTimeMillis()
+
+    val sql=(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
+      " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binaryTraj) as a index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ").format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
+
+    rs=Some(stmt.executeQuery(sql))
+
+    while (rs.get.next()) {
+      val obj=rs.get.getObject(1)
+      println(obj)
+      // env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
+
+    }
+
+
+    System.currentTimeMillis()-start
+  }
 
 
   test("Thesis range queries") {
@@ -237,6 +267,8 @@ class RangeQueries  extends FunSuite {
 
 
     val buffer_rangeBinaryTraj=new ArrayBuffer[Long]
+
+    val buffer_rangeBinaryTraj_part=new ArrayBuffer[Long]
 
     var i=0
 /*
@@ -305,6 +337,16 @@ class RangeQueries  extends FunSuite {
 
     }
 
+    i=0
+
+    while (i < 1) {
+
+      buffer_rangeBinaryTraj_part.append(rangeBinaryTraj_Part())
+
+      i=i+1
+
+    }
+
     println("Arr struct mean time: "+ buffer_rangeArrStructBF.sum /buffer_rangeArrStructBF.length.toDouble)
     println("Arr struct index mean time: "+ buffer_rangeArrStruct_INDEX.sum /buffer_rangeArrStruct_INDEX.length.toDouble)
     println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
@@ -314,6 +356,9 @@ class RangeQueries  extends FunSuite {
     println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
 
     println("Binary traj mean time: "+ buffer_rangeBinaryTraj.sum /buffer_rangeBinaryTraj.length.toDouble)
+
+    println("Binary rangeBinaryTraj_Part mean time: "+ buffer_rangeBinaryTraj_part.sum /buffer_rangeBinaryTraj_part.length.toDouble)
+
   }
 }
 
