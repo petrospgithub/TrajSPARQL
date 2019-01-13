@@ -271,7 +271,7 @@ class RangeQueries  extends FunSuite {
     val buffer_rangeBinaryTraj_part=new ArrayBuffer[Long]
 
     var i=0
-/*
+
     while (i < 3) {
 
       buffer_rangeArrStructBF.append(rangeArrStruct_BF())
@@ -326,38 +326,57 @@ class RangeQueries  extends FunSuite {
 
       i=i+1
     }
-*/
-    i=0
 
-    while (i < 1) {
+    try {
 
-      buffer_rangeBinaryTraj.append(rangeBinaryTraj())
+      i = 0
 
-      i=i+1
+      while (i < 3) {
 
+        buffer_rangeBinaryTraj_part.append(rangeBinaryTraj_Part())
+
+        i = i + 1
+
+      }
+
+      i = 0
+
+      while (i < 3) {
+
+        buffer_rangeBinaryTraj.append(rangeBinaryTraj())
+
+        i = i + 1
+
+      }
+
+      println("Arr struct mean time: "+ buffer_rangeArrStructBF.sum /buffer_rangeArrStructBF.length.toDouble)
+      println("Arr struct index mean time: "+ buffer_rangeArrStruct_INDEX.sum /buffer_rangeArrStruct_INDEX.length.toDouble)
+      println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
+
+      println("Binary mean time: "+ buffer_rangeBinary_BF.sum /buffer_rangeBinary_BF.length.toDouble)
+      println("Binary index mean time: "+ buffer_rangeBinary_INDEX.sum /buffer_rangeBinary_INDEX.length.toDouble)
+      println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
+      println("Binary traj mean time: "+ buffer_rangeBinaryTraj.sum /buffer_rangeBinaryTraj.length.toDouble)
+
+      println("Binary rangeBinaryTraj_Part mean time: "+ buffer_rangeBinaryTraj_part.sum /buffer_rangeBinaryTraj_part.length.toDouble)
+
+    } catch {
+      case e:Exception => {
+        println("Arr struct mean time: "+ buffer_rangeArrStructBF.sum /buffer_rangeArrStructBF.length.toDouble)
+        println("Arr struct index mean time: "+ buffer_rangeArrStruct_INDEX.sum /buffer_rangeArrStruct_INDEX.length.toDouble)
+        println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
+
+        println("Binary mean time: "+ buffer_rangeBinary_BF.sum /buffer_rangeBinary_BF.length.toDouble)
+        println("Binary index mean time: "+ buffer_rangeBinary_INDEX.sum /buffer_rangeBinary_INDEX.length.toDouble)
+        println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
+
+        println("Binary traj mean time: "+ buffer_rangeBinaryTraj.sum /buffer_rangeBinaryTraj.length.toDouble)
+
+        println("Binary rangeBinaryTraj_Part mean time: "+ buffer_rangeBinaryTraj_part.sum /buffer_rangeBinaryTraj_part.length.toDouble)
+
+        System.exit(0)
+      }
     }
-
-    i=0
-
-    while (i < 1) {
-
-      buffer_rangeBinaryTraj_part.append(rangeBinaryTraj_Part())
-
-      i=i+1
-
-    }
-
-    println("Arr struct mean time: "+ buffer_rangeArrStructBF.sum /buffer_rangeArrStructBF.length.toDouble)
-    println("Arr struct index mean time: "+ buffer_rangeArrStruct_INDEX.sum /buffer_rangeArrStruct_INDEX.length.toDouble)
-    println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
-
-    println("Binary mean time: "+ buffer_rangeBinary_BF.sum /buffer_rangeBinary_BF.length.toDouble)
-    println("Binary index mean time: "+ buffer_rangeBinary_INDEX.sum /buffer_rangeBinary_INDEX.length.toDouble)
-    println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
-
-    println("Binary traj mean time: "+ buffer_rangeBinaryTraj.sum /buffer_rangeBinaryTraj.length.toDouble)
-
-    println("Binary rangeBinaryTraj_Part mean time: "+ buffer_rangeBinaryTraj_part.sum /buffer_rangeBinaryTraj_part.length.toDouble)
 
   }
 }

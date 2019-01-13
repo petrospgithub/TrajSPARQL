@@ -126,11 +126,11 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(create)
 
-/*
+
     create = " CREATE EXTERNAL TABLE partition_index_imis400_binaryTraj (tree BINARY )  STORED AS PARQUET LOCATION 'hdfs:///user/root/partitions_traj_tree_binary_imis400_parquet' "
 
     stmt.execute(create)
-
+/*
     create = " CREATE TABLE trajectories_imis400_binaryTraj ( id BIGINT, trajectory BINARY,  rowId BIGINT,  pid BIGINT) CLUSTERED BY (rowId) SORTED BY (rowId) INTO "+buckets_num+" BUCKETS STORED AS ORC TBLPROPERTIES(\"orc.compress\"=\"snappy\") "
 
     stmt.execute(create)
