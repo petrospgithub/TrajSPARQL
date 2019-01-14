@@ -55,10 +55,10 @@ os.system("mvn test -Dtest=RangeQueries -q ")
 '''
 
 #!/bin/sh
-python clusterDecNode.py 0 > 15_worker
-python clusterDecNode.py 3 > 12_worker
-python clusterDecNode.py 6 > 9_worker
-python clusterDecNode.py 9 > 6_worker
-python clusterDecNode.py 12 > 3_worker
+python clusterDecNode_range.py 0 > 15_worker
+python clusterDecNode_range.py 3 > 12_worker
+python clusterDecNode_range.py 6 > 9_worker
+python clusterDecNode_range.py 9 > 6_worker
+python clusterDecNode_range.py 12 > 3_worker
 
 '''

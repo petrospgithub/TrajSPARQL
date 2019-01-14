@@ -126,7 +126,7 @@ object OcTreeApp {
 
     val partitions_counter = repartition.groupBy('pid).count()
 
-    partitions_counter.write.csv("octree_binary_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
+    partitions_counter.write.csv("octree_partitions_counter_" + output+"_"+maxItemByNode+"_"+maxLevel+"_"+fraction)
 
 
     val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({
@@ -135,8 +135,8 @@ object OcTreeApp {
       }
     })
 
-    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_binary_" + output + "_parquet")
-    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_binary_" + output + "_parquet")
+    partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_" + output + "_parquet")
+    repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_" + output + "_parquet")
 
 
     partitionMBB.repartition(1).mapPartitions(f=>{
@@ -163,7 +163,7 @@ object OcTreeApp {
       out.close()
 
       Iterator(Tree(Some(yourBytes)))
-    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_binary_" + output + "_parquet")
+    }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_tree_" + output + "_parquet")
 
     spark.close()
     /*
