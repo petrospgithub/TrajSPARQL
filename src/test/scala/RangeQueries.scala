@@ -327,6 +327,15 @@ class RangeQueries  extends FunSuite {
       i=i+1
     }
 
+    println("Arr struct mean time: "+ buffer_rangeArrStructBF.sum /buffer_rangeArrStructBF.length.toDouble)
+    println("Arr struct index mean time: "+ buffer_rangeArrStruct_INDEX.sum /buffer_rangeArrStruct_INDEX.length.toDouble)
+    println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
+
+    println("Binary mean time: "+ buffer_rangeBinary_BF.sum /buffer_rangeBinary_BF.length.toDouble)
+    println("Binary index mean time: "+ buffer_rangeBinary_INDEX.sum /buffer_rangeBinary_INDEX.length.toDouble)
+    println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
+
+/*
     try {
 
       i = 0
@@ -377,7 +386,7 @@ class RangeQueries  extends FunSuite {
         System.exit(0)
       }
     }
-
+*/
   }
 }
 

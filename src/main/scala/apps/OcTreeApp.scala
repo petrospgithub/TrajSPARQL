@@ -146,7 +146,10 @@ object OcTreeApp {
 
       while (f.hasNext) {
         val temp=f.next()
-        val envelope: EnvelopeST = temp.box.get
+        val temp_mbbst = temp.box.get
+
+        val envelope=new EnvelopeST(temp_mbbst.getMinX, temp_mbbst.getMaxX, temp_mbbst.getMinY, temp_mbbst.getMaxY, temp_mbbst.getMinT, temp_mbbst.getMaxT)
+
         envelope.setGid(temp.id.get)
         rtree3D.insert(envelope)
       }

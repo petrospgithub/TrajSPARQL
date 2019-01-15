@@ -110,7 +110,9 @@ object TrajBSP {
 
       while (f.hasNext) {
         val temp=f.next()
-        val envelope: EnvelopeST = new EnvelopeST(temp.box.get.minx, temp.box.get.maxx, temp.box.get.miny, temp.box.get.maxy, temp.box.get.mint, temp.box.get.maxt)
+        val temp_mbbst = temp.box.get
+
+        val envelope=new EnvelopeST(temp_mbbst.getMinX, temp_mbbst.getMaxX, temp_mbbst.getMinY, temp_mbbst.getMaxY, temp_mbbst.getMinT, temp_mbbst.getMaxT)
         envelope.setGid(temp.id.get)
         rtree3D.insert(envelope)
       }
