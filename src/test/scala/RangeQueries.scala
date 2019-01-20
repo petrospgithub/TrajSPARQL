@@ -64,7 +64,7 @@ class RangeQueries  extends FunSuite {
     stmt.execute(sql)
     System.currentTimeMillis()-start
   }
-
+/*
   def rangeArrStruct_index_pid():Long={
 
     rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
@@ -82,11 +82,19 @@ class RangeQueries  extends FunSuite {
       "(SELECT ST_IndexIntersects(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400) as b ON (b.trajectory_id=a.pid) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
       " WHERE ST_Intersects3D(MbbConstructor( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
+/*
+    rs=Some(stmt.executeQuery(sql))
+
+    while (rs.get.next()){
+      val obj=rs.get.getObject(1)
+      println(obj)
+    }*/
 
     stmt.execute(sql)
+
     System.currentTimeMillis()-start
   }
-
+*/
   def rangeBinary_BF():Long={
 
     rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
@@ -133,7 +141,7 @@ class RangeQueries  extends FunSuite {
     stmt.execute(sql)
     System.currentTimeMillis()-start
   }
-
+/*
   def rangeBinary_index_pid():Long={
     rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
 
@@ -154,7 +162,8 @@ class RangeQueries  extends FunSuite {
     stmt.execute(sql)
     System.currentTimeMillis()-start
   }
-
+*/
+  /*
   def rangeBinaryTraj():Long={
 
     rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
@@ -171,19 +180,11 @@ class RangeQueries  extends FunSuite {
 
     val sql=" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM index_imis400_temp_binaryTraj ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
 
-    rs=Some(stmt.executeQuery(sql))
-
-    while (rs.get.next()) {
-      val obj=rs.get.getObject(1)
-      println(obj)
-     // env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
-
-    }
-
+    stmt.executeQuery(sql)
 
     System.currentTimeMillis()-start
   }
-
+*/
   def rangeBinaryTraj_Part():Long={
 
     rs=Some(stmt.executeQuery("select box from index_imis400_binary distribute by rand() sort by rand() limit 1"))
@@ -199,8 +200,8 @@ class RangeQueries  extends FunSuite {
     val start=System.currentTimeMillis()
 
     val sql=(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-      " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binaryTraj) as a index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ").format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
-
+      " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binaryTraj) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ").format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)
+/*
     rs=Some(stmt.executeQuery(sql))
 
     while (rs.get.next()) {
@@ -209,7 +210,9 @@ class RangeQueries  extends FunSuite {
       // env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
 
     }
+*/
 
+    stmt.execute(sql)
 
     System.currentTimeMillis()-start
   }
@@ -259,14 +262,14 @@ class RangeQueries  extends FunSuite {
 
     val buffer_rangeArrStructBF=new ArrayBuffer[Long]
     val buffer_rangeArrStruct_INDEX=new ArrayBuffer[Long]
-    val buffer_rangeArrStruct_PID=new ArrayBuffer[Long]
+   // val buffer_rangeArrStruct_PID=new ArrayBuffer[Long]
 
     val buffer_rangeBinary_BF=new ArrayBuffer[Long]
     val buffer_rangeBinary_INDEX=new ArrayBuffer[Long]
-    val buffer_rangeBinary_PID=new ArrayBuffer[Long]
+   // val buffer_rangeBinary_PID=new ArrayBuffer[Long]
 
 
-    val buffer_rangeBinaryTraj=new ArrayBuffer[Long]
+  //  val buffer_rangeBinaryTraj=new ArrayBuffer[Long]
 
     val buffer_rangeBinaryTraj_part=new ArrayBuffer[Long]
 
@@ -287,7 +290,7 @@ class RangeQueries  extends FunSuite {
 
       i=i+1
     }
-
+/*
     i=0
 
     while (i < 3) {
@@ -296,7 +299,7 @@ class RangeQueries  extends FunSuite {
 
       i=i+1
     }
-
+*/
 
     i=0
 
@@ -319,21 +322,32 @@ class RangeQueries  extends FunSuite {
     }
 
     i=0
-
+/*
     while (i < 3) {
 
       buffer_rangeBinary_PID.append(rangeBinary_index_pid())
 
       i=i+1
     }
+*/
+    i = 0
+
+    while (i < 3) {
+
+      buffer_rangeBinaryTraj_part.append(rangeBinaryTraj_Part())
+
+      i = i + 1
+
+    }
 
     println("Arr struct mean time: "+ buffer_rangeArrStructBF.sum /buffer_rangeArrStructBF.length.toDouble)
     println("Arr struct index mean time: "+ buffer_rangeArrStruct_INDEX.sum /buffer_rangeArrStruct_INDEX.length.toDouble)
-    println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
+   // println("Arr struct index pid: "+ buffer_rangeArrStruct_PID.sum /buffer_rangeArrStruct_PID.length.toDouble)
 
     println("Binary mean time: "+ buffer_rangeBinary_BF.sum /buffer_rangeBinary_BF.length.toDouble)
     println("Binary index mean time: "+ buffer_rangeBinary_INDEX.sum /buffer_rangeBinary_INDEX.length.toDouble)
-    println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
+  //  println("Binary index pid: "+ buffer_rangeBinary_PID.sum /buffer_rangeBinary_PID.length.toDouble)
+    println("Binary rangeBinaryTraj_Part mean time: "+ buffer_rangeBinaryTraj_part.sum /buffer_rangeBinaryTraj_part.length.toDouble)
 
 /*
     try {

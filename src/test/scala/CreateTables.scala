@@ -9,6 +9,8 @@ nohup /root/apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hiveconf hive
 
 ss -lptn 'sport = :10000'
 
+hdfs dfs -rm -r /tmp/hive && hdfs dfs -mkdir /tmp/hive && hdfs dfs -chmod -R 777 /tmp/hive
+
  */
 
 @RunWith(classOf[JUnitRunner])
@@ -23,9 +25,9 @@ class CreateTables  extends FunSuite {
     var create = ""
     var insert = ""
 
-    //mvn test -Dtest=CreateTables -q -DargLine="-Dbuckets=100"
+    //mvn test -Dtest=CreateTables -q -DargLine="-Dbuckets=30"
 
-    val buckets_num = Integer.valueOf(System.getProperty("buckets"))
+    val buckets_num = 30//Integer.valueOf(System.getProperty("buckets"))
 
 
     /* Array + Struct */
@@ -63,11 +65,18 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(insert)
 
+    insert = " INSERT INTO trajectories_imis400_pid SELECT id, trajectory, rowId, pid FROM imis400_temp "
+
+    stmt.execute(insert)
+
     stmt.execute("analyze table trajectories_imis400 compute statistics")
     stmt.execute("analyze table trajectories_imis400 compute statistics for columns")
 
     stmt.execute("analyze table index_imis400 compute statistics")
     stmt.execute("analyze table index_imis400 compute statistics for columns")
+
+    stmt.execute("analyze table trajectories_imis400_pid compute statistics")
+    stmt.execute("analyze table trajectories_imis400_pid compute statistics for columns")
 
     /* Array + Struct */
 
@@ -107,11 +116,18 @@ class CreateTables  extends FunSuite {
 
     stmt.execute(insert)
 
+    insert = " INSERT INTO trajectories_imis400_binary_pid SELECT id, trajectory, rowId, pid FROM imis400_temp_binary  "
+
+    stmt.execute(insert)
+
     stmt.execute("analyze table trajectories_imis400_binary compute statistics")
     stmt.execute("analyze table trajectories_imis400_binary compute statistics for columns")
 
     stmt.execute("analyze table index_imis400_binary compute statistics")
     stmt.execute("analyze table index_imis400_binary compute statistics for columns")
+
+    stmt.execute("analyze table trajectories_imis400_binary_pid compute statistics")
+    stmt.execute("analyze table trajectories_imis400_binary_pid compute statistics for columns")
 
     /* Binary */
 

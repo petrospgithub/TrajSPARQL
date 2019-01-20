@@ -7,14 +7,14 @@ import org.scalatest.junit.JUnitRunner
 import scala.collection.mutable.ArrayBuffer
 
 @RunWith(classOf[JUnitRunner])
-class knnQueries extends FunSuite {
+class knnSelf extends FunSuite {
 
   private val con = DriverManager.getConnection("jdbc:hive2://83.212.100.24:10000/default", "root", "dithesis13@")
   private val stmt = con.createStatement
   private var rs:Option[ResultSet]=None
 
   def knnArrStruct_all(): Long = {
-
+/*
     rs = Some(stmt.executeQuery("select rowId from imis400_temp distribute by rand() sort by rand() limit 1"))
 
     var id: Option[Long] = None
@@ -22,43 +22,37 @@ class knnQueries extends FunSuite {
     while (rs.get.next()) {
       id = Some(rs.get.getLong(1))
     }
-
+*/
     val start = System.currentTimeMillis()
 
-    val sql = " SELECT a.rowId, ToOrderedList_arr( DTW_arr(a.trajectory, b.trajectory, 50, 'Euclidean', 86400, 86400), b.rowId, '-k -1', a.trajectory, b.trajectory) " +
-      "FROM (SELECT * FROM imis400_temp WHERE rowId=" + id.get + ") as a CROSS JOIN imis400_temp as b " +
+    val sql = " SELECT a.rowId, ToOrderedList_arr( DTW_arr(a.trajectory, b.trajectory, 50, 'Euclidean', 21600, 21600), b.rowId, '-k -1', a.trajectory, b.trajectory) " +
+      "FROM FROM imis400_temp  as a CROSS JOIN imis400_temp as b " +
       " GROUP BY a.rowId  "
 
-    stmt.execute(sql)
+
+    //stmt.execute(sql)
+
+    rs=Some(stmt.executeQuery(sql))
+
+    while (rs.get.next()) {
+      println(rs.get.getObject(1))
+      println(rs.get.getObject(2))
+    }
+
 
     System.currentTimeMillis() - start
   }
 
   def knnArrStruct_BF(): Long = {
 
-    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400_pid distribute by rand() sort by rand() limit 1"))
-
-    var id: Option[Long] = None
-
-    while (rs.get.next()) {
-      id = Some(rs.get.getLong(1))
-    }
-
     val start = System.currentTimeMillis()
-    /*
-        val sql = " SELECT a.rowId, ToOrderedList_arr( DTW_arr(a.trajectory, b.trajectory, 50, 'Euclidean', 21600, 21600), b.rowId, '-k -1', a.trajectory, b.trajectory) " +
-          "FROM (SELECT * FROM imis400_temp WHERE rowId=" + id.get + ") as a CROSS JOIN imis400_temp as b " +
-          " GROUP BY a.rowId  "
-    */
 
-    val sql = " SELECT c.rowId, ToOrderedList_arr( DTW_arr(c.trajectory, trajectories_imis400_pid.trajectory, 50, 'Euclidean', 86400, 86400), trajectories_imis400_pid.rowId, '-k -1', c.trajectory, trajectories_imis400_pid.trajectory )" +
+    val sql = " SELECT c.rowId, ToOrderedList_arr( DTW_arr(c.trajectory, trajectories_imis400_pid.trajectory, 50, 'Euclidean', 21600, 21600), trajectories_imis400_pid.rowId, '-k -1', c.trajectory, trajectories_imis400_pid.trajectory )" +
       " FROM " +
-      " (SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 40000.0, 86400, 86400, a.rowId) " +
-      " FROM (SELECT * FROM trajectories_imis400_pid WHERE rowId=" + id.get + ") as a JOIN partition_index_imis400 as b ) as c " +
+      " (SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 2000.0, 21600, 21600, a.rowId) " +
+      " FROM trajectories_imis400_pid as a JOIN partition_index_imis400 as b ) as c " +
       " JOIN trajectories_imis400_pid ON (c.trajectory_id==trajectories_imis400_pid.pid) " +
       " GROUP BY c.rowId "
-
-    println(sql)
 
     while (rs.get.next()) {
       println(rs.get.getObject(1))
@@ -70,25 +64,15 @@ class knnQueries extends FunSuite {
 
   def knnArrStruct_index(): Long = {
 
-    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400 distribute by rand() sort by rand() limit 1"))
-
-    var id: Option[Long] = None
-
-    while (rs.get.next()) {
-      id = Some(rs.get.getLong(1))
-    }
-
     val start = System.currentTimeMillis()
 
     val sql = " SELECT " +
-      " trajectories_imis400.rowId, ToOrderedList_arr( DTW_arr(trajectories_imis400.trajectory, final.trajectory, 50, 'Euclidean', 86400, 86400), final.trajectory_id, '-k -1', trajectories_imis400.trajectory, final.trajectory) " +
-      " FROM ( SELECT IndexTrajKNN_arr(c.trajectory, d.tree, 40000.0, 86400, 86400, c.rowId) " +
+      " trajectories_imis400.rowId, ToOrderedList_arr( DTW_arr(trajectories_imis400.trajectory, final.trajectory, 50, 'Euclidean', 21600, 21600), final.trajectory_id, '-k -1', trajectories_imis400.trajectory, final.trajectory) " +
+      " FROM ( SELECT IndexTrajKNN_arr(c.trajectory, d.tree, 2000.0, 21600, 21600, c.rowId) " +
       " FROM " +
-      " ( SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 40000.0, 86400, 86400, a.rowId) FROM ( SELECT * FROM trajectories_imis400 where rowId=" + id.get + " ) as a JOIN partition_index_imis400 as b ) as c " +
+      " ( SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 2000.0, 21600, 21600, a.rowId) FROM trajectories_imis400 as a JOIN partition_index_imis400 as b ) as c " +
       " INNER JOIN index_imis400 as d ON (c.trajectory_id=d.id) ) as final INNER JOIN trajectories_imis400 ON (final.trajectory_id=trajectories_imis400.rowId) " +
       " GROUP BY trajectories_imis400.rowId "
-
-    println(sql)
 
 
     while (rs.get.next()) {
@@ -102,31 +86,15 @@ class knnQueries extends FunSuite {
 
   def knnBinary_BF(): Long = {
 
-    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400_binary_pid distribute by rand() sort by rand() limit 1"))
-
-    var id: Option[Long] = None
-
-    while (rs.get.next()) {
-      id = Some(rs.get.getLong(1))
-    }
-
-
     val start = System.currentTimeMillis()
-    /*
-        val sql = "SELECT a.rowId, ToOrderedListBinary( DTW_binary(a.trajectory, b.trajectory, 50, 'Euclidean', 21600, 21600), b.rowId, '-k -1', a.trajectory, b.trajectory) " +
-          " FROM (SELECT * FROM trajectories_imis400_binary WHERE rowId=" + id.get + ") as a CROSS JOIN trajectories_imis400_binary as b " +
-          " GROUP BY a.rowId "
-    */
 
-    val sql = " SELECT c.rowId, ToOrderedListBinary( DTW_binary(c.trajectory, trajectories_imis400_pid.trajectory, 50, 'Euclidean', 86400, 86400), trajectories_imis400_pid.rowId, '-k -1', c.trajectory, trajectories_imis400_pid.trajectory) " +
+
+    val sql = " SELECT c.rowId, ToOrderedListBinary( DTW_binary(c.trajectory, trajectories_imis400_pid.trajectory, 50, 'Euclidean', 21600, 21600), trajectories_imis400_pid.rowId, '-k -1', c.trajectory, trajectories_imis400_pid.trajectory) " +
       " FROM " +
-      " (SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.0, 86400, 86400, a.rowId) " +
-      " FROM (SELECT * FROM trajectories_imis400_binary_pid WHERE rowId=" + id.get + ") as a JOIN partition_index_imis400_binary as b ) as c " +
+      " (SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 2000.0, 21600, 21600, a.rowId) " +
+      " FROM trajectories_imis400_binary_pid as a JOIN partition_index_imis400_binary as b ) as c " +
       " JOIN trajectories_imis400_binary_pid ON (c.trajectory_id==trajectories_imis400_pid.pid) " +
       " GROUP BY c.rowId "
-
-    println(sql)
-
 
     while (rs.get.next()) {
       println(rs.get.getObject(1))
@@ -138,27 +106,15 @@ class knnQueries extends FunSuite {
 
   def knnBinary_index(): Long = {
 
-    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400_binary distribute by rand() sort by rand() limit 1"))
-
-    var id: Option[Long] = None
-
-    while (rs.get.next()) {
-      id = Some(rs.get.getLong(1))
-    }
-
-
     val start = System.currentTimeMillis()
 
     val sql = " SELECT " +
-      " trajectories_imis400_binary.rowId, ToOrderedListBinary( DTW_binary(trajectories_imis400_binary.trajectory, final.trajectory, 50, 'Euclidean', 86400, 86400), final.trajectory_id, '-k -1', trajectories_imis400_binary.trajectory, final.trajectory) " +
-      " FROM ( SELECT IndexTrajKNN_binary(c.trajectory, d.tree, 40000.0, 86400, 86400, c.rowId) " +
+      " trajectories_imis400_binary.rowId, ToOrderedListBinary( DTW_binary(trajectories_imis400_binary.trajectory, final.trajectory, 50, 'Euclidean', 21600, 21600), final.trajectory_id, '-k -1', trajectories_imis400_binary.trajectory, final.trajectory) " +
+      " FROM ( SELECT IndexTrajKNN_binary(c.trajectory, d.tree, 2000.0, 21600, 21600, c.rowId) " +
       " FROM " +
-      " ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.0, 86400, 86400, a.rowId) FROM ( SELECT * FROM trajectories_imis400_binary where rowId=" + id.get + " ) as a JOIN partition_index_imis400_binary as b ) as c " +
+      " ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 2000.0, 21600, 21600, a.rowId) FROM trajectories_imis400_binary as a JOIN partition_index_imis400_binary as b ) as c " +
       " INNER JOIN index_imis400_binary as d ON (c.trajectory_id=d.id) ) as final INNER JOIN trajectories_imis400_binary ON (final.trajectory_id=trajectories_imis400_binary.rowId) " +
       " GROUP BY trajectories_imis400_binary.rowId "
-
-    println(sql)
-
 
     while (rs.get.next()) {
       println(rs.get.getObject(1))
@@ -169,23 +125,12 @@ class knnQueries extends FunSuite {
   }
 
   def knnBinaryTraj(): Long = {
-    rs = Some(stmt.executeQuery("select rowId from imis400_temp distribute by rand() sort by rand() limit 1"))
-
-    var id: Option[Long] = None
-
-    while (rs.get.next()) {
-      id = Some(rs.get.getLong(1))
-    }
-
 
     val start = System.currentTimeMillis()
 
-    val sql = "SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.0, 86400, 86400, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.0, 0 ) " +
-      " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.0, 86400, 86400, a.rowId) FROM (SELECT * FROM trajectories_imis400_binary where rowId=" + id.get + ") as a JOIN partition_index_imis400_binary as b ) as c" +
+    val sql = "SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 2000.0, 21600, 21600, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.0, 0 ) " +
+      " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 2000.0, 21600, 21600, a.rowId) FROM trajectories_imis400_binary as a JOIN partition_index_imis400_binary as b ) as c" +
       " INNER JOIN index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) "
-
-
-    println(sql)
 
     while (rs.get.next()) {
       println(rs.get.getObject(1))
@@ -195,7 +140,7 @@ class knnQueries extends FunSuite {
     System.currentTimeMillis() - start
   }
 
-  test("Thesis knn queries") {
+  test("Thesis knnSelf queries") {
 
     //stmt.execute("ADD JAR hdfs:///user/root/hiveThesis/HiveTrajSPARQL-jar-with-dependencies.jar ")
 
@@ -255,7 +200,7 @@ class knnQueries extends FunSuite {
     val buffer_knnBinaryTraj = new ArrayBuffer[Long]
 
     var i = 0
-/*
+
     while (i < 3) {
 
       buffer_knnArrStruct_all.append(knnArrStruct_all())
@@ -264,7 +209,7 @@ class knnQueries extends FunSuite {
     }
 
     wait(30000)
-*/
+
     i = 0
 
     while (i < 3) {
@@ -275,7 +220,7 @@ class knnQueries extends FunSuite {
     }
     println("Arr struct mean time: " + buffer_knnArrStruct_BF.sum / buffer_knnArrStruct_BF.length.toDouble)
 
-    //wait(30000)
+    wait(30000)
 
     i = 0
 
@@ -287,7 +232,7 @@ class knnQueries extends FunSuite {
     }
     println("Arr struct index mean time: " + buffer_knnArrStruct_INDEX.sum / buffer_knnArrStruct_INDEX.length.toDouble)
 
-   // wait(30000)
+    wait(30000)
 
     i = 0
 
@@ -300,7 +245,7 @@ class knnQueries extends FunSuite {
     }
     println("Binary mean time: " + buffer_knnBinary_BF.sum / buffer_knnBinary_BF.length.toDouble)
 
-    //wait(30000)
+    wait(30000)
 
     i = 0
 
@@ -313,7 +258,7 @@ class knnQueries extends FunSuite {
     }
     println("Binary index mean time: " + buffer_knnBinary_INDEX.sum / buffer_knnBinary_INDEX.length.toDouble)
 
-   // wait(30000)
+    wait(30000)
 
     i = 0
 
