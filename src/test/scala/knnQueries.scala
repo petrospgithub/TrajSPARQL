@@ -280,9 +280,11 @@ class knnQueries extends FunSuite {
 
     wait(30000)
 */
+
+
     i = 0
 
-    while (i < 1) {
+    while (i < 3) {
 
       buffer_knnArrStruct_BF.append(knnArrStruct_BF())
 
@@ -290,11 +292,9 @@ class knnQueries extends FunSuite {
     }
     println("Arr struct mean time: " + buffer_knnArrStruct_BF.sum / buffer_knnArrStruct_BF.length.toDouble)
 
-    //wait(30000)
-
     i = 0
 
-    while (i < 1) {
+    while (i < 3) {
 
       buffer_knnArrStruct_INDEX.append(knnArrStruct_index())
 
@@ -302,11 +302,9 @@ class knnQueries extends FunSuite {
     }
     println("Arr struct index mean time: " + buffer_knnArrStruct_INDEX.sum / buffer_knnArrStruct_INDEX.length.toDouble)
 
-   // wait(30000)
-
     i = 0
 
-    while (i < 1) {
+    while (i < 3) {
 
       buffer_knnBinary_BF.append(knnBinary_BF())
 
@@ -315,11 +313,9 @@ class knnQueries extends FunSuite {
     }
     println("Binary mean time: " + buffer_knnBinary_BF.sum / buffer_knnBinary_BF.length.toDouble)
 
-    //wait(30000)
-
     i = 0
 
-    while (i < 1) {
+    while (i < 3) {
 
       buffer_knnBinary_INDEX.append(knnBinary_index())
 
@@ -328,11 +324,9 @@ class knnQueries extends FunSuite {
     }
     println("Binary index mean time: " + buffer_knnBinary_INDEX.sum / buffer_knnBinary_INDEX.length.toDouble)
 
-   // wait(30000)
-
     i = 0
 
-    while (i < 1) {
+    while (i < 3) {
 
       buffer_knnBinaryTraj.append(knnBinaryTraj())
 
