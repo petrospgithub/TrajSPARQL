@@ -136,6 +136,12 @@ object OcTreeAppBinary {
       }
     })
 
+    repartition.groupByKey(p=>p.pid).mapGroups({
+      (id, it) => {
+        SpatioTemporalIndex.rtreeblob_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+      }
+    }).write.option("compression", "snappy").mode("overwrite").parquet("octree_traj_partitionMBBDF_binary_" + output + "_parquet")
+
     partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("octree_partitionMBBDF_binary_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("octree_repartition_binary_" + output + "_parquet")
 
