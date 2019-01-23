@@ -18,10 +18,10 @@ class knnQueries extends FunSuite {
   private val con = DriverManager.getConnection("jdbc:hive2://83.212.100.24:10000/default", "root", "dithesis13@")
   private val stmt = con.createStatement
   private var rs:Option[ResultSet]=None
-
+/*
   def knnArrStruct_all(): Long = {
 
-    rs = Some(stmt.executeQuery("select rowId from imis400_temp distribute by rand() sort by rand() limit 1"))
+    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400 distribute by rand() sort by rand() limit 1"))
 
     var id: Option[Long] = None
 
@@ -39,10 +39,10 @@ class knnQueries extends FunSuite {
 
     System.currentTimeMillis() - start
   }
-
+*/
   def knnArrStruct_BF(): Long = {
 
-    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400_pid distribute by rand() sort by rand() limit 1"))
+    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400 distribute by rand() sort by rand() limit 1"))
 
     var id: Option[Long] = None
 
@@ -111,7 +111,7 @@ class knnQueries extends FunSuite {
 
   def knnBinary_BF(): Long = {
 
-    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400_binary_pid distribute by rand() sort by rand() limit 1"))
+    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     var id: Option[Long] = None
 
@@ -181,7 +181,7 @@ class knnQueries extends FunSuite {
   }
 
   def knnBinaryTraj(): Long = {
-    rs = Some(stmt.executeQuery("select rowId from imis400_temp distribute by rand() sort by rand() limit 1"))
+    rs = Some(stmt.executeQuery("select rowId from trajectories_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     var id: Option[Long] = None
 

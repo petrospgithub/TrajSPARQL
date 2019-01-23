@@ -55,10 +55,10 @@ os.system("mvn test -Dtest=knnQueries -q ")
 '''
 
 #!/bin/sh
-python clusterDecNode.py 0 > 15_worker
-python clusterDecNode.py 3 > 12_worker
-python clusterDecNode.py 6 > 9_worker
-python clusterDecNode.py 9 > 6_worker
-python clusterDecNode.py 12 > 3_worker
+python clusterDecNode_knn.py 0 > 15_worker
+python clusterDecNode_knn.py 3 > 12_worker
+python clusterDecNode_knn.py 6 > 9_worker
+python clusterDecNode_knn.py 9 > 6_worker
+python clusterDecNode_knn.py 12 > 3_worker
 
 '''
