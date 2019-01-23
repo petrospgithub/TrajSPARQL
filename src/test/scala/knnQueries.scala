@@ -192,9 +192,11 @@ class knnQueries extends FunSuite {
 
     val start = System.currentTimeMillis()
 
-    val sql = " SELECT ToOrderedListBinary(final.distance, final.rowid, '-k -1', final.traja, final.trajb) FROM (SELECT * FROM (SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.1, 0 ) " +
-      " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM (SELECT * FROM trajectories_imis400_binary where rowId=" + id.get + ") as a JOIN partition_index_imis400_binary as b ) as c" +
-      " INNER JOIN index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) ) as final GROUP BY final.trajArowid "
+    val sql = "SELECT final.trajArowid, ToOrderedListBinary(final.distance, final.rowid, '-k -1', final.traja, final.trajb) FROM ( " +
+      " SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 2000.1, 21600, 21600, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.1, 0 ) " +
+      " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 2000.1, 21600, 21600, a.rowId) FROM " +
+      " (SELECT * FROM trajectories_imis400_binary where rowId="+id.get+") as a JOIN partition_index_imis400_binary as b ) as c INNER JOIN " +
+      " index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) ) as final GROUP BY final.trajArowid;"
 
 /*
     println(sql)
@@ -326,7 +328,7 @@ class knnQueries extends FunSuite {
 
     i = 0
 
-    while (i < 1) {
+    while (i < 3) {
 
       buffer_knnBinaryTraj.append(knnBinaryTraj())
 
