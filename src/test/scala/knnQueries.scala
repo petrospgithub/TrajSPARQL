@@ -59,7 +59,7 @@ class knnQueries extends FunSuite {
 
     val sql = " SELECT c.rowId, ToOrderedList_arr( DTW_arr(c.trajectory, trajectories_imis400_pid.trajectory, 50, 'Euclidean', 604800, 604800), trajectories_imis400_pid.rowId, '-k -1', c.trajectory, trajectories_imis400_pid.trajectory )" +
       " FROM " +
-      " (SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 40000.0, 604800, 604800, a.rowId) " +
+      " (SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) " +
       " FROM (SELECT * FROM trajectories_imis400_pid WHERE rowId=" + id.get + ") as a JOIN partition_index_imis400 as b ) as c " +
       " JOIN trajectories_imis400_pid ON (c.trajectory_id==trajectories_imis400_pid.pid) " +
       " GROUP BY c.rowId "
@@ -91,9 +91,9 @@ class knnQueries extends FunSuite {
 
     val sql = " SELECT " +
       " trajectories_imis400.rowId, ToOrderedList_arr( DTW_arr(trajectories_imis400.trajectory, final.trajectory, 50, 'Euclidean', 604800, 604800), final.trajectory_id, '-k -1', trajectories_imis400.trajectory, final.trajectory) " +
-      " FROM ( SELECT IndexTrajKNN_arr(c.trajectory, d.tree, 40000.0, 604800, 604800, c.rowId) " +
+      " FROM ( SELECT IndexTrajKNN_arr(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId) " +
       " FROM " +
-      " ( SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 40000.0, 604800, 604800, a.rowId) FROM ( SELECT * FROM trajectories_imis400 where rowId=" + id.get + " ) as a JOIN partition_index_imis400 as b ) as c " +
+      " ( SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM ( SELECT * FROM trajectories_imis400 where rowId=" + id.get + " ) as a JOIN partition_index_imis400 as b ) as c " +
       " INNER JOIN index_imis400 as d ON (c.trajectory_id=d.id) ) as final INNER JOIN trajectories_imis400 ON (final.trajectory_id=trajectories_imis400.rowId) " +
       " GROUP BY trajectories_imis400.rowId "
 /*
@@ -129,7 +129,7 @@ class knnQueries extends FunSuite {
 
     val sql = " SELECT c.rowId, ToOrderedListBinary( DTW_binary(c.trajectory, trajectories_imis400_binary_pid.trajectory, 50, 'Euclidean', 604800, 604800), trajectories_imis400_binary_pid.rowId, '-k -1', c.trajectory, trajectories_imis400_binary_pid.trajectory) " +
       " FROM " +
-      " (SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.0, 604800, 604800, a.rowId) " +
+      " (SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) " +
       " FROM (SELECT * FROM trajectories_imis400_binary_pid WHERE rowId=" + id.get + ") as a JOIN partition_index_imis400_binary as b ) as c " +
       " JOIN trajectories_imis400_binary_pid ON (c.trajectory_id==trajectories_imis400_binary_pid.pid) " +
       " GROUP BY c.rowId "
@@ -161,9 +161,9 @@ class knnQueries extends FunSuite {
 
     val sql = " SELECT " +
       " trajectories_imis400_binary.rowId, ToOrderedListBinary( DTW_binary(trajectories_imis400_binary.trajectory, final.trajectory, 50, 'Euclidean', 604800, 604800), final.trajectory_id, '-k -1', trajectories_imis400_binary.trajectory, final.trajectory) " +
-      " FROM ( SELECT IndexTrajKNN_binary(c.trajectory, d.tree, 40000.0, 604800, 604800, c.rowId) " +
+      " FROM ( SELECT IndexTrajKNN_binary(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId) " +
       " FROM " +
-      " ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.0, 604800, 604800, a.rowId) FROM ( SELECT * FROM trajectories_imis400_binary where rowId=" + id.get + " ) as a JOIN partition_index_imis400_binary as b ) as c " +
+      " ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM ( SELECT * FROM trajectories_imis400_binary where rowId=" + id.get + " ) as a JOIN partition_index_imis400_binary as b ) as c " +
       " INNER JOIN index_imis400_binary as d ON (c.trajectory_id=d.id) ) as final INNER JOIN trajectories_imis400_binary ON (final.trajectory_id=trajectories_imis400_binary.rowId) " +
       " GROUP BY trajectories_imis400_binary.rowId "
 /*
@@ -192,8 +192,8 @@ class knnQueries extends FunSuite {
 
     val start = System.currentTimeMillis()
 
-    val sql = " SELECT ToOrderedListBinary(final.distance, final.rowid, '-k -1', final.traja, final.trajb) FROM (SELECT * FROM (SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.0, 604800, 604800, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.0, 0 ) " +
-      " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.0, 604800, 604800, a.rowId) FROM (SELECT * FROM trajectories_imis400_binary where rowId=" + id.get + ") as a JOIN partition_index_imis400_binary as b ) as c" +
+    val sql = " SELECT ToOrderedListBinary(final.distance, final.rowid, '-k -1', final.traja, final.trajb) FROM (SELECT * FROM (SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.1, 0 ) " +
+      " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM (SELECT * FROM trajectories_imis400_binary where rowId=" + id.get + ") as a JOIN partition_index_imis400_binary as b ) as c" +
       " INNER JOIN index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) ) as final GROUP BY final.trajArowid "
 
 /*
