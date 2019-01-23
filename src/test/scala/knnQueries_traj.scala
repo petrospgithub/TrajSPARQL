@@ -13,7 +13,7 @@ Arr struct index mean time: 678981.0
  */
 
 @RunWith(classOf[JUnitRunner])
-class knnQueries_arr extends FunSuite {
+class knnQueries_traj extends FunSuite {
 
   private val con = DriverManager.getConnection("jdbc:hive2://83.212.100.24:10000/default", "root", "dithesis13@")
   private val stmt = con.createStatement
