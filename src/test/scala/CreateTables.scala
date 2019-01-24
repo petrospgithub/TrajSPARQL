@@ -27,7 +27,7 @@ class CreateTables  extends FunSuite {
 
     //mvn test -Dtest=CreateTables -q -DargLine="-Dbuckets=30"
 
-    val buckets_num = 30//Integer.valueOf(System.getProperty("buckets"))
+    val buckets_num = Integer.valueOf(System.getProperty("buckets"))
 
 
     /* Array + Struct */
