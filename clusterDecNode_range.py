@@ -50,7 +50,26 @@ os.system("nohup /root/apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hi
 
 time.sleep(10)
 
-os.system("mvn test -Dtest=RangeQueries -q ")
+os.system("mvn test -Dtest=RangeQueriesBF_arr -q >> "+str(15-int(sys.argv[1]))+"_worker_range")
+
+time.sleep(60)
+
+os.system("mvn test -Dtest=RangeQueriesIndex_arr -q >> "+str(15-int(sys.argv[1]))+"_worker_range")
+
+time.sleep(60)
+
+os.system("mvn test -Dtest=RangeQueriesBF_binary -q >>"+str(15-int(sys.argv[1]))+"_worker_range")
+
+time.sleep(60)
+
+os.system("mvn test -Dtest=RangeQueriesIndex_binary -q >>"+str(15-int(sys.argv[1]))+"_worker_range")
+
+time.sleep(60)
+
+os.system("mvn test -Dtest=RangeQueriesTraj_binary -q >> "+str(15-int(sys.argv[1]))+"_worker_range")
+
+time.sleep(60)
+
 
 '''
 
