@@ -53,7 +53,13 @@ for d in dataset_sample:
     os.system("mvn test -Dtest=CreateTables -q -DargLine=\"-Dbuckets=30\" ")
     time.sleep(30)
 
-    os.system("mvn test -Dtest=RangeQueries -q >> speed_up_range_"+d)
+    os.system("mvn test -Dtest=RangeQueriesBF_arr -q >> speed_up_range_"+d)
+    time.sleep(60)
+
+    os.system("mvn test -Dtest=RangeQueriesIndex_arr -q >> speed_up_range_"+d)
+    time.sleep(60)
+
+    os.system("mvn test -Dtest=RangeQueriesTraj_binary -q >> speed_up_range_"+d)
     time.sleep(60)
 
     os.system("mvn test -Dtest=knnQueries_arrPID -q >> speed_up_knn_"+d)
@@ -64,17 +70,22 @@ for d in dataset_sample:
 
     time.sleep(60)
 
-    os.system("mvn test -Dtest=knnQueries_binaryPID -q >> speed_up_knn_"+d)
-
-    time.sleep(60)
-
-    os.system("mvn test -Dtest=knnQueries_binaryIndex -q >> speed_up_knn_"+d)
-
-    time.sleep(60)
-
     os.system("mvn test -Dtest=knnQueries_traj -q >> speed_up_knn_"+d)
 
     time.sleep(60)
+
+    '''
+    
+    os.system("mvn test -Dtest=pidknn.knnSelf_arrPID -q >> "+str(15-int(sys.argv[1]))+"_worker_knnSelf")
+    time.sleep(60)
+    
+    os.system("mvn test -Dtest=pidknn.knnSelf_arrIndex -q >> "+str(15-int(sys.argv[1]))+"_worker_knnSelf")
+    time.sleep(60)
+    
+    os.system("mvn test -Dtest=pidknn.knnSelf_traj -q >> "+str(15-int(sys.argv[1]))+"_worker_knnSelf")
+    time.sleep(60)
+    
+    '''
 
 
 

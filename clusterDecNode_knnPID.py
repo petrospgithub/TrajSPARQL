@@ -50,23 +50,15 @@ os.system("nohup /root/apache-hive-2.3.3-bin/bin/hive --service hiveserver2 --hi
 
 time.sleep(10)
 
-os.system("mvn test -Dtest=knnQueries_arrPID -q >> "+str(15-int(sys.argv[1]))+"_worker_knn")
+os.system("mvn test -Dtest=pidknn.knnSelf_arrPID -q >> "+str(15-int(sys.argv[1]))+"_worker_knnSelf")
 
 time.sleep(60)
 
-os.system("mvn test -Dtest=knnQueries_arrIndex -q >> "+str(15-int(sys.argv[1]))+"_worker_knn")
-
-#time.sleep(60)
-
-#os.system("mvn test -Dtest=knnQueries_binaryPID -q >>"+str(15-int(sys.argv[1]))+"_worker")
-
-#time.sleep(60)
-
-#os.system("mvn test -Dtest=knnQueries_binaryIndex -q >>"+str(15-int(sys.argv[1]))+"_worker")
-
+os.system("mvn test -Dtest=pidknn.knnSelf_arrIndex -q >> "+str(15-int(sys.argv[1]))+"_worker_knnSelf")
 time.sleep(60)
 
-os.system("mvn test -Dtest=knnQueries_traj -q >> "+str(15-int(sys.argv[1]))+"_worker_knn")
+
+os.system("mvn test -Dtest=pidknn.knnSelf_traj -q >> "+str(15-int(sys.argv[1]))+"_worker_knnSelf")
 
 time.sleep(60)
 
@@ -74,10 +66,10 @@ time.sleep(60)
 '''
 
 #!/bin/sh
-python clusterDecNode_knn.py 0 
-python clusterDecNode_knn.py 3 
-python clusterDecNode_knn.py 6 
-python clusterDecNode_knn.py 9 
-python clusterDecNode_knn.py 12
+python clusterDecNode_knnPID.py 0 
+python clusterDecNode_knnPID.py 3 
+python clusterDecNode_knnPID.py 6 
+python clusterDecNode_knnPID.py 9 
+python clusterDecNode_knnPID.py 12
 
 '''
