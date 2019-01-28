@@ -36,7 +36,7 @@ class knnSelf_arrPID extends FunSuite {
     val sql = " SELECT c.rowId, ToOrderedList_arr( DTW_arr(c.trajectory, trajectories_imis400_pid.trajectory, 50, 'Euclidean', 604800, 604800), trajectories_imis400_pid.rowId, '-k -1', c.trajectory, trajectories_imis400_pid.trajectory )" +
       " FROM " +
       " (SELECT IndexTrajKNN_arr(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) " +
-      " FROM (SELECT * FROM trajectories_imis400_pid WHERE pid=" + id + ") as a JOIN partition_index_imis400 as b ) as c " +
+      " FROM (SELECT * FROM trajectories_imis400_pid WHERE pid=" + id.get + ") as a JOIN partition_index_imis400 as b ) as c " +
       " JOIN trajectories_imis400_pid ON (c.trajectory_id==trajectories_imis400_pid.pid) " +
       " GROUP BY c.rowId "
     /*
