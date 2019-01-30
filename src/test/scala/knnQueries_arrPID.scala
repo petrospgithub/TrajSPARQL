@@ -58,17 +58,16 @@ class knnQueries_arrPID extends FunSuite {
 
   test("Thesis knn queries") {
 
-    //stmt.execute("ADD JAR hdfs:///user/root/hiveThesis/HiveTrajSPARQL-jar-with-dependencies.jar ")
-
     stmt.execute(" SET hive.auto.convert.join=true ")
     stmt.execute(" SET hive.enforce.bucketing=true ")
     stmt.execute(" SET hive.optimize.bucketmapjoin.sortedmerge = true ")
     stmt.execute(" SET hive.auto.convert.sortmerge.join=true ")
     stmt.execute(" SET hive.optimize.bucketmapjoin = true ")
     stmt.execute(" SET hive.auto.convert.join.noconditionaltask = true ")
-    stmt.execute(" SET hive.auto.convert.join.noconditionaltask.size = 10000000 ")
-
+    stmt.execute(" SET hive.auto.convert.join.noconditionaltask.size = 256000000 ")
     stmt.execute(" SET hive.vectorized.execution.enabled=true ")
+    stmt.execute(" SET hive.vectorized.execution.reduce.enabled=true ")
+
     stmt.execute(" SET hive.exec.parallel=true ")
     stmt.execute(" SET mapred.compress.map.output=true ")
     stmt.execute(" SET mapred.output.compress=true ")
@@ -76,20 +75,26 @@ class knnQueries_arrPID extends FunSuite {
     stmt.execute(" SET hive.stats.autogather=true ")
     stmt.execute(" SET hive.optimize.ppd=true ")
     stmt.execute(" SET hive.optimize.ppd.storage=true ")
-    stmt.execute(" SET hive.vectorized.execution.reduce.enabled=true ")
+
+    stmt.execute("SET hive.tez.auto.reducer.parallelism=true")
+
     stmt.execute(" SET hive.stats.fetch.column.stats=true ")
     stmt.execute(" SET hive.tez.auto.reducer.parallelism=true ")
+    stmt.execute("set hive.optimize.index.filter=true")
 
-    stmt.execute(" set hive.server2.tez.initialize.default.sessions=true ")
     stmt.execute(" set hive.prewarm.enabled=true ")
-    stmt.execute(" set hive.prewarm.numcontainers=15 ")
+    stmt.execute(" set hive.prewarm.numcontainers=3 ")
+    stmt.execute(" set hive.server2.tez.initialize.default.sessions=true ")
     stmt.execute(" set tez.am.container.reuse.enabled=true ")
     stmt.execute(" set hive.server2.enable.doAs=false ")
 
+    stmt.execute("set tez.grouping.min-size=16777216")
+    stmt.execute("set tez.grouping.max-size=256000000")
 
-    /*
-    TODO add knn udfs!
-     */
+    stmt.execute("set hive.merge.mapfiles=false")
+
+    stmt.execute("set tez.runtime.pipelined-shuffle.enabled=true")
+    stmt.execute("set tez.runtime.pipelined.sorter.lazy-allocate.memory=true")
 
     stmt.execute(" CREATE TEMPORARY FUNCTION IndexTrajKNN_arr AS 'di.thesis.hive.similarity.IndexKNN'")
     stmt.execute(" CREATE TEMPORARY FUNCTION IndexTrajKNN_binary AS 'di.thesis.hive.similarity.IndexKNNBinary'")

@@ -71,10 +71,20 @@ os.system("mvn test -Dtest=RangeQueriesTraj_binary -q >> "+str(15-int(sys.argv[1
 time.sleep(60)
 '''
 time.sleep(60)
+os.system("mvn test -Dtest=RangeQueriesBF_arr -q >> "+str(15-int(sys.argv[1]))+"_worker_range")
 
+time.sleep(60)
 os.system("mvn test -Dtest=RangeQueriesPID_arr -q >>"+str(15-int(sys.argv[1]))+"_worker_range_pid_arr")
 
 time.sleep(60)
+os.system("mvn test -Dtest=RangeQueriesIndex_arr -q >> "+str(15-int(sys.argv[1]))+"_worker_range")
+
+time.sleep(60)
+os.system("mvn test -Dtest=RangeQueriesTraj_binary -q >> "+str(15-int(sys.argv[1]))+"_worker_range")
+
+time.sleep(60)
+
+
 
 #os.system("mvn test -Dtest=RangeQueriesPID_binary -q >> "+str(15-int(sys.argv[1]))+"_worker_range_pid_arr")
 

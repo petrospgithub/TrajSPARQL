@@ -16,7 +16,7 @@ class knnSelf_traj extends FunSuite {
   private var rs:Option[ResultSet]=None
     
   def knnBinaryTraj(): Long = {
-
+/*
   rs = Some(stmt.executeQuery("select id from index_imis400_binary distribute by rand() sort by rand() limit 1"))
 
     var id: Option[Long] = None
@@ -24,14 +24,14 @@ class knnSelf_traj extends FunSuite {
     while (rs.get.next()) {
       id = Some(rs.get.getLong(1))
     }
-
+*/
 
     val start = System.currentTimeMillis()
 
     val sql = "SELECT final.trajArowid, ToOrderedListBinary(final.distance, final.rowid, '-k -1', final.traja, final.trajb) FROM ( " +
       " SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.1, 0 ) " +
       " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM " +
-      " (SELECT * FROM trajectories_imis400_binary where pid="+id.get+") as a JOIN partition_index_imis400_binary as b ) as c INNER JOIN " +
+      " (SELECT * FROM trajectories_imis400_binary_pid) as a JOIN partition_index_imis400_binary as b ) as c INNER JOIN " +
       " index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) ) as final GROUP BY final.trajArowid"
 
     /*
@@ -50,17 +50,16 @@ class knnSelf_traj extends FunSuite {
 
   test("Thesis pidknn.knnSelf queries") {
 
-    //stmt.execute("ADD JAR hdfs:///user/root/hiveThesis/HiveTrajSPARQL-jar-with-dependencies.jar ")
-
     stmt.execute(" SET hive.auto.convert.join=true ")
     stmt.execute(" SET hive.enforce.bucketing=true ")
     stmt.execute(" SET hive.optimize.bucketmapjoin.sortedmerge = true ")
     stmt.execute(" SET hive.auto.convert.sortmerge.join=true ")
     stmt.execute(" SET hive.optimize.bucketmapjoin = true ")
     stmt.execute(" SET hive.auto.convert.join.noconditionaltask = true ")
-    stmt.execute(" SET hive.auto.convert.join.noconditionaltask.size = 10000000 ")
-
+    stmt.execute(" SET hive.auto.convert.join.noconditionaltask.size = 256000000 ")
     stmt.execute(" SET hive.vectorized.execution.enabled=true ")
+    stmt.execute(" SET hive.vectorized.execution.reduce.enabled=true ")
+
     stmt.execute(" SET hive.exec.parallel=true ")
     stmt.execute(" SET mapred.compress.map.output=true ")
     stmt.execute(" SET mapred.output.compress=true ")
@@ -68,20 +67,26 @@ class knnSelf_traj extends FunSuite {
     stmt.execute(" SET hive.stats.autogather=true ")
     stmt.execute(" SET hive.optimize.ppd=true ")
     stmt.execute(" SET hive.optimize.ppd.storage=true ")
-    stmt.execute(" SET hive.vectorized.execution.reduce.enabled=true ")
+
+    stmt.execute("SET hive.tez.auto.reducer.parallelism=true")
+
     stmt.execute(" SET hive.stats.fetch.column.stats=true ")
     stmt.execute(" SET hive.tez.auto.reducer.parallelism=true ")
+    stmt.execute("set hive.optimize.index.filter=true")
 
-    stmt.execute(" set hive.server2.tez.initialize.default.sessions=true ")
     stmt.execute(" set hive.prewarm.enabled=true ")
-    stmt.execute(" set hive.prewarm.numcontainers=15 ")
+    stmt.execute(" set hive.prewarm.numcontainers=3 ")
+    stmt.execute(" set hive.server2.tez.initialize.default.sessions=true ")
     stmt.execute(" set tez.am.container.reuse.enabled=true ")
     stmt.execute(" set hive.server2.enable.doAs=false ")
 
+    stmt.execute("set tez.grouping.min-size=16777216")
+    stmt.execute("set tez.grouping.max-size=256000000")
 
-    /*
-    TODO add knn udfs!
-     */
+    stmt.execute("set hive.merge.mapfiles=false")
+
+    stmt.execute("set tez.runtime.pipelined-shuffle.enabled=true")
+    stmt.execute("set tez.runtime.pipelined.sorter.lazy-allocate.memory=true")
 
     stmt.execute(" CREATE TEMPORARY FUNCTION IndexTrajKNN_arr AS 'di.thesis.hive.similarity.IndexKNN'")
     stmt.execute(" CREATE TEMPORARY FUNCTION IndexTrajKNN_binary AS 'di.thesis.hive.similarity.IndexKNNBinary'")
