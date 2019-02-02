@@ -51,7 +51,7 @@ object rangeEvaluation {
       val in = new ObjectInputStream(bis)
       val traj_tree = in.readObject.asInstanceOf[STRtree3D]
 
-      val tree_results = traj_tree.queryIDTrajectory(broadcastMBR.value)
+      val tree_results = traj_tree.queryIDTrajectory(broadcastMBR.value).asInstanceOf[util.List[(Long, Array[PointST])]]
 
       tree_results.iterator().asScala
     }).collect()
