@@ -31,9 +31,9 @@ object rangeEvaluation {
 
     val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
 
-    val randomMBR=indexDS.orderBy(rand()).limit(1).collect() //todo check!
+    val randomMBR=indexDS.select('box).orderBy(rand()).limit(1).collect() //todo check!
 
-    val box=utils.MbbSerialization.deserialize(randomMBR.head.box.get)
+    val box=utils.MbbSerialization.deserialize(randomMBR.head.getAs("box"))
 
     val broadcastMBR=spark.sparkContext.broadcast(box)
 

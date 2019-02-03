@@ -36,7 +36,7 @@ object readResources {
 
       val traj = trajectory.head.trajectory.get
 
-      val randomMBR=indexDS.orderBy(rand()).select('box).limit(1).collect() //todo check!
+      val randomMBR=indexDS.select('box).orderBy(rand()).limit(1).collect() //todo check!
 
       val box=utils.MbbSerialization.deserialize(randomMBR.head.getAs("box"))
 
@@ -49,8 +49,8 @@ object readResources {
     val timeThreshold=spark.sparkContext.broadcast(args(1))
 */
       trajectoryDS.show()
-      indexDS.show()
-      part.show()
+     // indexDS.show()
+     // part.show()
 
       println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
       println("End: " + (System.currentTimeMillis() - start))
