@@ -1,6 +1,7 @@
 package benchmark
 
 import org.apache.spark.sql.SparkSession
+import spatial.partition.MBBindexST
 import types.Partitioner
 
 object createResources {
@@ -26,7 +27,7 @@ object createResources {
 
     trajectoryDS.repartition(pid, $"pid").write.option("compression", "snappy").mode("overwrite").parquet("trajectories_benchmark")
 
-    spark.read.parquet(traj_index).repartition(pid, $"id").write.option("compression", "snappy").mode("overwrite").parquet("index_benchmark")
+    spark.read.parquet(traj_index).as[MBBindexST].repartition(pid, $"id").write.option("compression", "snappy").mode("overwrite").parquet("index_benchmark")
 
 
     spark.stop()
