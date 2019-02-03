@@ -32,6 +32,8 @@ object knnEvaluation {
 
     val trajectory=trajectoryDS.orderBy(rand()).limit(1).collect() //todo check!
 
+    trajectoryDS.unpersist()
+
     val traj=trajectory.head.trajectory.get
 
     val broadcastTraj=spark.sparkContext.broadcast(traj)
