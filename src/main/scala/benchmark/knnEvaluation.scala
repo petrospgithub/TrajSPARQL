@@ -8,7 +8,8 @@ import di.thesis.indexing.types.{EnvelopeST, Triplet}
 import org.apache.spark.sql.{Encoders, SparkSession}
 import types.Partitioner
 import org.apache.spark.sql.functions.rand
-import spatial.partition.MBBindexST
+import spatial.partition.{MBBindexST, MBBindexSTBlob}
+
 import scala.collection.JavaConverters._
 
 object knnEvaluation {
@@ -26,7 +27,7 @@ object knnEvaluation {
 
     val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
 
-    val indexDS=spark.read.parquet("index_benchmark").as[MBBindexST]
+    val indexDS=spark.read.parquet("index_benchmark").as[MBBindexSTBlob]
 
     val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
 
