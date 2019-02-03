@@ -25,11 +25,16 @@ object rangeEvaluation {
 
     import spark.implicits._
 
-    val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
+   // val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
 
-    val indexDS=spark.read.parquet("index_benchmark").as[MBBindexSTBlob]
+    val temp=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
 
-    val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
+    val pid=temp.select('id).distinct().count().toInt
+
+
+    val indexDS=temp.repartition(pid, $"id")
+
+    // val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
 
     val randomMBR=indexDS.select('box).orderBy(rand()).limit(1).collect() //todo check!
 

@@ -25,9 +25,15 @@ object knnEvaluation {
 
     import spark.implicits._
 
-    val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
+    val trajectoryDS = spark.read.parquet("octree_repartition_imis400_parquet").as[Partitioner]
 
-    val indexDS=spark.read.parquet("index_benchmark").as[MBBindexSTBlob]
+   // val indexDS=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
+
+    val temp=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
+
+    val pid=temp.select('id).distinct().count().toInt
+
+    val indexDS=temp.repartition(pid, $"id")
 
     val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
 
