@@ -5,8 +5,7 @@ import types.Partitioner
 
 object createResources {
   def main(args: Array[String]): Unit = {
-    val traj_path=args(0)
-    val traj_index=args(1) //index with trajectories
+
 
    // val traj_part=args(2)
 
@@ -15,6 +14,8 @@ object createResources {
       .appName("TrajectoryOctree")//.master("local[*]")
       .getOrCreate()
 
+    val traj_path=args(0)
+    val traj_index=args(1) //index with trajectories
 
     import spark.implicits._
 
