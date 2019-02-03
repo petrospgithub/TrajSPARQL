@@ -7,7 +7,7 @@ import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.Triplet
 import org.apache.spark.sql.{Encoders, SparkSession}
 import org.apache.spark.sql.functions.rand
-import spatial.partition.MBBindexST
+import spatial.partition.{MBBindexST, MBBindexSTBlob}
 import types.Partitioner
 
 object readResources {
@@ -28,13 +28,20 @@ object readResources {
 
       val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
 
-      val indexDS = spark.read.parquet("index_benchmark").as[MBBindexST]
+      val indexDS = spark.read.parquet("index_benchmark").as[MBBindexSTBlob]
 
       val part = spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
 
       val trajectory = trajectoryDS.orderBy(rand()).limit(1).collect()
 
       val traj = trajectory.head.trajectory.get
+
+      val randomMBR=indexDS.orderBy(rand()).limit(1).collect() //todo check!
+
+      val box=utils.MbbSerialization.deserialize(randomMBR.head.box.get)
+
+      //val broadcastMBR=spark.sparkContext.broadcast(box)
+
       /*
     val broadcastTraj=spark.sparkContext.broadcast(traj)
 
