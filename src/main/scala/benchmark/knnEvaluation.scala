@@ -35,7 +35,7 @@ object knnEvaluation {
 
     val indexDS=temp.repartition(pid, $"id")
 
-    val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
+    //val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
 
     val trajectory=trajectoryDS.orderBy(rand()).limit(1).collect() //todo check!
 
@@ -45,8 +45,6 @@ object knnEvaluation {
 
     val broadcastTraj=spark.sparkContext.broadcast(traj)
 
-    val distThreshold=spark.sparkContext.broadcast(args(0))
-    val timeThreshold=spark.sparkContext.broadcast(args(1))
 
     //add knn parameters
 
@@ -54,32 +52,10 @@ object knnEvaluation {
 
     val exec=spark.time ({
 
-      val valid = part.flatMap(btree => {
-        val bis = new ByteArrayInputStream(btree)
-        val in = new ObjectInputStream(bis)
-        val retrievedObject = in.readObject.asInstanceOf[STRtree3D]
-
-        val list: util.List[Long] = retrievedObject.knn(broadcastTraj.value, distThreshold.value.toDouble, timeThreshold.value.toInt, timeThreshold.value.toInt).asInstanceOf[util.List[Long]]
-
-        val result = new Array[Long](list.size())
-
-        var i = 0
-
-        while (i < list.size()) {
-
-          result(i) = list.get(i)
-
-          i += 1
-        }
-
-
-        result.toIterator
-      })
-
       val tEncoder = Encoders.kryo(classOf[Triplet])
 
-      val arr=valid.joinWith(indexDS, valid("value") === indexDS("id")).flatMap(join=>{
-        val b=join._2.tree
+      val arr=indexDS.flatMap(join=>{
+        val b=join.tree
 
         val bis = new ByteArrayInputStream(b.get)
         val in = new ObjectInputStream(bis)
