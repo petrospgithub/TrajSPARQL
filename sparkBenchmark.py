@@ -30,7 +30,7 @@ for w in workers:
     --conf spark.master=yarn \
     --conf spark.submit.deployMode=client \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
-    --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.createResources target/TrajSPARQL-jar-with-dependencies.jar > read_resources_"+w)
+    --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.readResources target/TrajSPARQL-jar-with-dependencies.jar > read_resources_"+w)
 
     os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --conf spark.executor.memory=6g \
     --conf spark.executor.cores=1 \
