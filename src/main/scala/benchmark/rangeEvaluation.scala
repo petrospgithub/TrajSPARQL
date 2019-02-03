@@ -43,28 +43,34 @@ object rangeEvaluation {
 
     //flatmap sto partition
 
-
-    val arr=indexDS.flatMap(join=>{
-      val b=join.tree
-
-      val bis = new ByteArrayInputStream(b.get)
-      val in = new ObjectInputStream(bis)
-      val traj_tree = in.readObject.asInstanceOf[STRtree3D]
-
-      val tree_results = traj_tree.queryIDTrajectory(broadcastMBR.value).asInstanceOf[util.List[(Long, Array[PointST])]]
-
-      tree_results.iterator().asScala
-    }).collect()
+    val exec=spark.time ({
 
 
-    spark.stop()
+      val arr = indexDS.flatMap(join => {
+        val b = join.tree
 
-    //println(arr.sortWith(_.getDistance <= _.getDistance).head)
+        val bis = new ByteArrayInputStream(b.get)
+        val in = new ObjectInputStream(bis)
+        val traj_tree = in.readObject.asInstanceOf[STRtree3D]
 
+        val tree_results = traj_tree.queryIDTrajectory(broadcastMBR.value).asInstanceOf[util.List[(Long, Array[PointST])]]
+
+        tree_results.iterator().asScala
+      }).collect()
+
+
+      spark.stop()
+
+      //println(arr.sortWith(_.getDistance <= _.getDistance).head)
+
+      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+      println("End: " + (System.currentTimeMillis() - start))
+      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+    })
     println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
-    println("End: "+(System.currentTimeMillis()-start))
-    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
 
+    println("Sparm time command: "+exec)
+    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
   }
 }
 

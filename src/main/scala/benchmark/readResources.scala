@@ -15,6 +15,7 @@ object readResources {
 
     val start=System.currentTimeMillis()
 
+
     val spark = SparkSession.builder
       .appName("TrajectoryOctree") //.master("local[*]")
       .getOrCreate()
@@ -22,28 +23,36 @@ object readResources {
 
     import spark.implicits._
 
-    val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
 
-    val indexDS=spark.read.parquet("index_benchmark").as[MBBindexST]
+    val exec=spark.time ({
 
-    val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
+      val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
 
-    val trajectory=trajectoryDS.orderBy(rand()).limit(1).collect()
+      val indexDS = spark.read.parquet("index_benchmark").as[MBBindexST]
 
-    val traj=trajectory.head.trajectory.get
-/*
+      val part = spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
+
+      val trajectory = trajectoryDS.orderBy(rand()).limit(1).collect()
+
+      val traj = trajectory.head.trajectory.get
+      /*
     val broadcastTraj=spark.sparkContext.broadcast(traj)
 
     val distThreshold=spark.sparkContext.broadcast(args(0))
     val timeThreshold=spark.sparkContext.broadcast(args(1))
 */
-    trajectoryDS.show()
-    indexDS.show()
-    part.show()
+      trajectoryDS.show()
+      indexDS.show()
+      part.show()
+
+      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+      println("End: " + (System.currentTimeMillis() - start))
+      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+    })
 
     println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
-    println("End: "+(System.currentTimeMillis() - start))
-    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
 
+    println("Sparm time command: "+exec)
+    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
   }
 }

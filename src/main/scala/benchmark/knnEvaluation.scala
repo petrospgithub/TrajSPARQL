@@ -43,51 +43,57 @@ object knnEvaluation {
 
     //flatmap sto partition
 
-    val valid=part.flatMap(btree=>{
-      val bis = new ByteArrayInputStream(btree)
-      val in = new ObjectInputStream(bis)
-      val retrievedObject = in.readObject.asInstanceOf[STRtree3D]
+    val exec=spark.time ({
 
-      val list:util.List[Long]=retrievedObject.knn(broadcastTraj.value, distThreshold.value.toDouble, timeThreshold.value.toInt, timeThreshold.value.toInt).asInstanceOf[util.List[Long]]
+      val valid = part.flatMap(btree => {
+        val bis = new ByteArrayInputStream(btree)
+        val in = new ObjectInputStream(bis)
+        val retrievedObject = in.readObject.asInstanceOf[STRtree3D]
 
-      val result=new Array[Long](list.size())
+        val list: util.List[Long] = retrievedObject.knn(broadcastTraj.value, distThreshold.value.toDouble, timeThreshold.value.toInt, timeThreshold.value.toInt).asInstanceOf[util.List[Long]]
 
-      var i=0
+        val result = new Array[Long](list.size())
 
-      while (i<list.size()) {
+        var i = 0
 
-        result(i)=list.get(i)
+        while (i < list.size()) {
 
-        i+=1
-      }
+          result(i) = list.get(i)
+
+          i += 1
+        }
 
 
-      result.toIterator
+        result.toIterator
+      })
+
+      val tEncoder = Encoders.kryo(classOf[Triplet])
+
+      val arr=valid.joinWith(indexDS, valid("value") === indexDS("id")).flatMap(join=>{
+        val b=join._2.tree
+
+        val bis = new ByteArrayInputStream(b.get)
+        val in = new ObjectInputStream(bis)
+        val traj_tree = in.readObject.asInstanceOf[STRtree3D]
+
+        val matches2:util.List[Triplet]=traj_tree.knn(broadcastTraj.value, 40000.1, "DTW", 1, 604800, 604800, "Euclidean", 50, 0, 0)
+
+        matches2.iterator().asScala
+      })(tEncoder).collect()
+
+      spark.stop()
+
+      println(arr.sortWith(_.getDistance <= _.getDistance).head)
+
+      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+
+      println("End: "+(System.currentTimeMillis()-start))
+      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
     })
 
-    val tEncoder = Encoders.kryo(classOf[Triplet])
-
-    val arr=valid.joinWith(indexDS, valid("value") === indexDS("id")).flatMap(join=>{
-      val b=join._2.tree
-
-      val bis = new ByteArrayInputStream(b.get)
-      val in = new ObjectInputStream(bis)
-      val traj_tree = in.readObject.asInstanceOf[STRtree3D]
-
-      val matches2:util.List[Triplet]=traj_tree.knn(broadcastTraj.value, 40000.1, "DTW", 1, 604800, 604800, "Euclidean", 50, 0, 0)
-
-      matches2.iterator().asScala
-    })(tEncoder).collect()
-
-
-    spark.stop()
-
-    println(arr.sortWith(_.getDistance <= _.getDistance).head)
-
     println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
 
-    println("End: "+(System.currentTimeMillis()-start))
+    println("Sparm time command: "+exec)
     println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
-
   }
 }
