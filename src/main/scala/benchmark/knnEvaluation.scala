@@ -8,6 +8,7 @@ import di.thesis.indexing.types.Triplet
 import org.apache.spark.sql.{Encoders, SparkSession}
 import types.Partitioner
 import org.apache.spark.sql.functions.rand
+import org.apache.spark.storage.StorageLevel
 import spatial.partition.MBBindexSTBlob
 
 import scala.collection.JavaConverters._
@@ -37,6 +38,9 @@ object knnEvaluation {
 
     val indexDS=temp.repartition(pid, $"id")
 */
+
+    indexDS.persist(StorageLevel.MEMORY_AND_DISK_2)
+
     val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]].collect().head
 
     val trajectory=trajectoryDS.orderBy(rand()).limit(1).collect() //todo check!
