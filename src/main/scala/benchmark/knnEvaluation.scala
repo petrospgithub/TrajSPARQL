@@ -29,14 +29,14 @@ object knnEvaluation {
 
     val trajectoryDS = spark.read.parquet("octree_repartition_imis400_parquet").as[Partitioner]
 
-   // val indexDS=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
-
+   val indexDS=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
+/*
     val temp=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
 
     val pid=temp.select('id).distinct().count().toInt
 
     val indexDS=temp.repartition(pid, $"id")
-
+*/
     val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]].collect().head
 
     val trajectory=trajectoryDS.orderBy(rand()).limit(1).collect() //todo check!
