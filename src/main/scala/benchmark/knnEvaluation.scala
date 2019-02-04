@@ -56,12 +56,12 @@ object knnEvaluation {
       val in2 = new ObjectInputStream(bis2)
       val index = in2.readObject.asInstanceOf[STRtree3D]
 
-      val matches=index.knn(traj, 40000.1, 604800,604800).asScala.toSet
+      val matches=index.knn(traj, 40000.1, 604800,604800).asScala.toSet.asInstanceOf[Set[Long]]
 
 
       val tEncoder = Encoders.kryo(classOf[Triplet])
 
-      val arr=indexDS.filter(row=>matches.contains(row.id)).map(join=>{
+      val arr=indexDS.filter(row=>matches.contains(row.id.get)).map(join=>{
         val b=join.tree
 
         val bis = new ByteArrayInputStream(b.get)
