@@ -1,17 +1,16 @@
 package benchmark
 
-import java.io.{ByteArrayInputStream, ObjectInput, ObjectInputStream}
+import java.io.{ByteArrayInputStream, ObjectInputStream}
 import java.util
 
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
-import di.thesis.indexing.types.{EnvelopeST, Triplet}
+import di.thesis.indexing.types.Triplet
 import org.apache.spark.sql.{Encoders, SparkSession}
 import types.Partitioner
 import org.apache.spark.sql.functions.rand
-import spatial.partition.{MBBindexST, MBBindexSTBlob}
+import spatial.partition.MBBindexSTBlob
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 object knnEvaluation {
 
@@ -23,6 +22,8 @@ object knnEvaluation {
       .appName("TrajectoryOctree") //.master("local[*]")
       .getOrCreate()
 
+
+    spark.sparkContext.setLogLevel("WARN")
 
     import spark.implicits._
 
@@ -57,30 +58,35 @@ object knnEvaluation {
       val index = in2.readObject.asInstanceOf[STRtree3D]
 
       val matches=index.knn(traj, 40000.1, 604800,604800).asScala.toSet.asInstanceOf[Set[Long]]
-
+      println(matches)
 
       val tEncoder = Encoders.kryo(classOf[Triplet])
 
-      val arr=indexDS.filter(row=>matches.contains(row.id.get)).map(join=>{
-        val b=join.tree
+      try {
 
-        val bis = new ByteArrayInputStream(b.get)
-        val in = new ObjectInputStream(bis)
-        val traj_tree = in.readObject.asInstanceOf[STRtree3D]
+        val arr = indexDS.filter(row => matches.contains(row.id.get)).map(join => {
+          val b = join.tree
 
-        val matches2:util.List[Triplet]=traj_tree.knn(broadcastTraj.value, 40000.1, "DTW", 1, 604800, 604800, "Euclidean", 50, 0, 0)
+          val bis = new ByteArrayInputStream(b.get)
+          val in = new ObjectInputStream(bis)
+          val traj_tree = in.readObject.asInstanceOf[STRtree3D]
 
-        matches2.asScala.sortWith(_.getDistance<=_.getDistance).head
-      })(tEncoder).collect()
+          val matches2: util.List[Triplet] = traj_tree.knn(broadcastTraj.value, 40000.1, "DTW", 1, 604800, 604800, "Euclidean", 50, 0, 0)
 
-      spark.stop()
+          matches2.asScala.sortWith(_.getDistance <= _.getDistance).head
+        })(tEncoder).collect()
 
-      arr.sortWith(_.getDistance<=_.getDistance)
+        spark.stop()
 
-      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+        arr.sortWith(_.getDistance <= _.getDistance)
 
-      println("End: "+(System.currentTimeMillis()-start))
-      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+        println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+
+        println("End: " + (System.currentTimeMillis() - start))
+        println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+      } catch {
+        case e:NullPointerException=> None
+      }
     })
 
     println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
