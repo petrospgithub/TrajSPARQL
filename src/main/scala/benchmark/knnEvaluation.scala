@@ -59,9 +59,9 @@ object knnEvaluation {
       val matches=index.knn(traj, 40000.1, 604800,604800).asScala.toSet
 
 
-      val tEncoder = Encoders.kryo(classOf[mutable.Buffer[Triplet]])
+      val tEncoder = Encoders.kryo(classOf[Triplet])
 
-      val arr=indexDS.filter(row=>matches.contains(row.id.get)).map(join=>{
+      val arr=indexDS.filter(row=>matches.contains(row.id)).map(join=>{
         val b=join.tree
 
         val bis = new ByteArrayInputStream(b.get)
@@ -70,12 +70,12 @@ object knnEvaluation {
 
         val matches2:util.List[Triplet]=traj_tree.knn(broadcastTraj.value, 40000.1, "DTW", 1, 604800, 604800, "Euclidean", 50, 0, 0)
 
-        matches2.asScala
+        matches2.asScala.sortWith(_.getDistance<=_.getDistance).head
       })(tEncoder).collect()
 
       spark.stop()
 
-      arr.head.sortWith(_.getDistance<=_.getDistance)
+      arr.sortWith(_.getDistance<=_.getDistance)
 
       println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
 
