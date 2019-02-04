@@ -11,6 +11,7 @@ import org.apache.spark.sql.functions.rand
 import spatial.partition.{MBBindexST, MBBindexSTBlob}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object knnEvaluation {
 
@@ -35,7 +36,7 @@ object knnEvaluation {
 
     val indexDS=temp.repartition(pid, $"id")
 
-    //val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
+    val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]].collect().head
 
     val trajectory=trajectoryDS.orderBy(rand()).limit(1).collect() //todo check!
 
@@ -45,16 +46,22 @@ object knnEvaluation {
 
     val broadcastTraj=spark.sparkContext.broadcast(traj)
 
-
     //add knn parameters
 
     //flatmap sto partition
 
     val exec=spark.time ({
 
-      val tEncoder = Encoders.kryo(classOf[Triplet])
+      val bis2 = new ByteArrayInputStream(part)
+      val in2 = new ObjectInputStream(bis2)
+      val index = in2.readObject.asInstanceOf[STRtree3D]
 
-      val arr=indexDS.flatMap(join=>{
+      val matches=index.knn(traj, 40000.1, 604800,604800).asScala.toSet
+
+
+      val tEncoder = Encoders.kryo(classOf[mutable.Buffer[Triplet]])
+
+      val arr=indexDS.filter(row=>matches.contains(row.id.get)).map(join=>{
         val b=join.tree
 
         val bis = new ByteArrayInputStream(b.get)
@@ -63,12 +70,12 @@ object knnEvaluation {
 
         val matches2:util.List[Triplet]=traj_tree.knn(broadcastTraj.value, 40000.1, "DTW", 1, 604800, 604800, "Euclidean", 50, 0, 0)
 
-        matches2.iterator().asScala
+        matches2.asScala
       })(tEncoder).collect()
 
       spark.stop()
 
-      println(arr.sortWith(_.getDistance <= _.getDistance).head)
+      arr.head.sortWith(_.getDistance<=_.getDistance)
 
       println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
 
