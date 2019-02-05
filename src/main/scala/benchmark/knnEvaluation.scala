@@ -49,7 +49,8 @@ object knnEvaluation {
         " SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.1, 0 ) " +
         " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM " +
         " (SELECT * FROM trajectories_imis400_binary where rowId=9706626089284 ) as a CROSS JOIN partition_index_imis400_binary as b ) as c INNER JOIN " +
-        " index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) ) as final GROUP BY final.trajArowid").show()
+        " index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) ) as final GROUP BY final.trajArowid").collect()
+        .foreach(println)
     })
 
     spark.stop()
