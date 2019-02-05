@@ -20,82 +20,56 @@ object knnEvaluation {
     val start=System.currentTimeMillis()
 
     val spark = SparkSession.builder
-      .appName("TrajectoryOctree") //.master("local[*]")
+      .appName("knnEvaluation") //.master("local[*]")
       .getOrCreate()
 
 
-    spark.sparkContext.setLogLevel("WARN")
 
+    spark.sparkContext.setLogLevel("WARN")
     import spark.implicits._
 
-    val trajectoryDS = spark.read.parquet("octree_repartition_imis400_parquet").as[Partitioner]
+    spark.sql(" CREATE TEMPORARY FUNCTION IndexTrajKNN_arr AS 'di.thesis.hive.similarity.IndexKNN'")
+    spark.sql(" CREATE TEMPORARY FUNCTION IndexTrajKNN_binary AS 'di.thesis.hive.similarity.IndexKNNBinary'")
 
-   val indexDS=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
-/*
-    val temp=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
 
-    val pid=temp.select('id).distinct().count().toInt
+    spark.sql(" CREATE TEMPORARY FUNCTION DTW_arr AS 'di.thesis.hive.similarity.DTWUDF'")
+    spark.sql(" CREATE TEMPORARY FUNCTION DTW_binary AS 'di.thesis.hive.similarity.DTWBinary'")
 
-    val indexDS=temp.repartition(pid, $"id")
-*/
 
-    indexDS.persist(StorageLevel.MEMORY_AND_DISK_2)
+    spark.sql(" CREATE TEMPORARY FUNCTION IndexStoreTrajKNN_binary AS 'di.thesis.hive.similarity.IndeKNNBinaryStoreTraj'")
 
-    val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]].collect().head
+    spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedList_arr AS 'di.thesis.hive.similarity.ToOrderedList'")
+    spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedListBinary AS 'di.thesis.hive.similarity.ToOrderedListBinary'")
 
-    val trajectory=trajectoryDS.orderBy(rand()).limit(1).collect() //todo check!
 
-    trajectoryDS.unpersist()
-
-    val traj=trajectory.head.trajectory.get
-
-    val broadcastTraj=spark.sparkContext.broadcast(traj)
-
-    //add knn parameters
-
-    //flatmap sto partition
-
-    val exec=spark.time ({
-
-      val bis2 = new ByteArrayInputStream(part)
-      val in2 = new ObjectInputStream(bis2)
-      val index = in2.readObject.asInstanceOf[STRtree3D]
-
-      val matches=index.knn(traj, 40000.1, 604800,604800).asScala.toSet.asInstanceOf[Set[Long]]
-      println(matches)
-
-      val tEncoder = Encoders.kryo(classOf[Triplet])
-
-      try {
-
-        val arr = indexDS.filter(row => matches.contains(row.id.get)).map(join => {
-          val b = join.tree
-
-          val bis = new ByteArrayInputStream(b.get)
-          val in = new ObjectInputStream(bis)
-          val traj_tree = in.readObject.asInstanceOf[STRtree3D]
-
-          val matches2: util.List[Triplet] = traj_tree.knn(broadcastTraj.value, 40000.1, "DTW", 1, 604800, 604800, "Euclidean", 50, 0, 0)
-
-          matches2.asScala.sortWith(_.getDistance <= _.getDistance).head
-        })(tEncoder).collect()
-
-        spark.stop()
-
-        arr.sortWith(_.getDistance <= _.getDistance)
-
-        println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
-
-        println("End: " + (System.currentTimeMillis() - start))
-        println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
-      } catch {
-        case e:NullPointerException=> None
-      }
+    spark.time ({
+      spark.sql("SELECT final.trajArowid, ToOrderedListBinary(final.distance, final.rowid, 1, final.traja, final.trajb) FROM ( " +
+        " SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.1, 0 ) " +
+        " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM " +
+        " (SELECT * FROM trajectories_imis400_binary where rowId=9706626089284 ) as a JOIN partition_index_imis400_binary as b ) as c INNER JOIN " +
+        " index_imis400_binaryTraj as d ON (c.trajectory_id=d.id) ) as final GROUP BY final.trajArowid").show()
     })
 
-    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
-
-    println("Sparm time command: "+exec)
-    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+    spark.stop()
   }
 }
+
+/*
+spark-shell -jars /root/implementation/HiveTrajSPARQL/HiveTrajSPARQL-jar-with-dependencies.jar
+    spark.sql(" ADD JAR file:///root/implementation/HiveTrajSPARQL/HiveTrajSPARQL-jar-with-dependencies.jar ")
+    spark.sql(" CREATE TEMPORARY FUNCTION ST_Intersects3D AS 'di.thesis.hive.stoperations.ST_Intersects3D' ")
+
+
+ spark.sql(" ADD JAR /root/implementation/HiveTrajSPARQL/target/HiveTrajSPARQL-jar-with-dependencies.jar ")
+    spark.sql(" CREATE TEMPORARY FUNCTION IndexIntersectsTraj AS 'di.thesis.hive.stoperations.IndexIntersectsTraj' ")
+
+spark.sql(" CREATE TEMPORARY FUNCTION MbbConstructorBinary AS 'di.thesis.hive.mbb.MbbSTUDFBinary' ")
+    spark.sql(" CREATE TEMPORARY FUNCTION ST_IndexIntersectsBinary AS 'di.thesis.hive.stoperations.IndexIntersects3DBinary' ")
+
+spark.sql("select box from index_imis400 distribute by rand() sort by rand() limit 1").collect.foreach(p=>println(p))
+
+
+spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( 2562556.1248126877, 2628152.990087475, 4559502.846446961, 4573813.639087068, CAST(1221926524 as BIGINT), CAST(1221982681 as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( 2562556.1248126877, 2628152.990087475, 4559502.846446961, 4573813.639087068, CAST(1221926524 as BIGINT), CAST(1221982681 as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ")
+
+
+ */
