@@ -42,13 +42,13 @@ object knnEvaluation {
 
     spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedList_arr AS 'di.thesis.hive.similarity.ToOrderedList'")
     spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedListBinary AS 'di.thesis.hive.similarity.ToOrderedListBinary'")
-    spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedListBinary AS 'di.thesis.hive.similarity.ToOrderedListBinarySpark'")
+    spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedListBinarySpark AS 'di.thesis.hive.similarity.ToOrderedListBinarySpark'")
 
     val id=spark.sql("select rowId from trajectories_imis400_binary distribute by rand() sort by rand() limit 1").collect().head.getLong(0)
 
     spark.time ({
 
-      spark.sql("SELECT final.trajArowid, ToOrderedListBinary(final.distance, final.rowid, 1, final.traja, final.trajb) FROM ( " +
+      spark.sql("SELECT final.trajArowid, ToOrderedListBinarySpark(final.distance, final.rowid, 1, final.traja, final.trajb) FROM ( " +
         " SELECT IndexStoreTrajKNN_binary(c.trajectory, d.tree, 40000.1, 604800, 604800, c.rowId, 'DTW', 'Euclidean', 1, 50, 0.1, 0 ) " +
         " FROM ( SELECT IndexTrajKNN_binary(a.trajectory,b.tree, 40000.1, 604800, 604800, a.rowId) FROM " +
         " (SELECT * FROM trajectories_imis400_binary where rowId="+id+" ) as a CROSS JOIN partition_index_imis400_binary as b ) as c INNER JOIN " +
