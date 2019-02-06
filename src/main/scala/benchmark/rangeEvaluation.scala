@@ -20,9 +20,10 @@ object rangeEvaluation {
     val start=System.currentTimeMillis()
 
     val spark = SparkSession.builder
-      .appName("TrajectoryOctree") //.master("local[*]")
+      .appName("rangeEvaluation") //.master("local[*]")
+      .config("hive.metastore.uris", "thrift://83.212.100.24:9083")
+      .enableHiveSupport()
       .getOrCreate()
-
 
     import spark.implicits._
 

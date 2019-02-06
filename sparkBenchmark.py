@@ -16,9 +16,7 @@ for w in workers:
     --conf spark.master=yarn \
     --conf spark.submit.deployMode=client \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
-    --conf spark.sql.shuffle.partitions=7357 \
-    --conf spark.default.parallelism=7357 \
-    --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.rangeEvaluation target/TrajSPARQL-jar-with-dependencies.jar > rangeEvaluation_"+w)
+    --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.rangeEvaluation target/TrajSPARQL-jar-with-dependencies.jar > spark_rangeEvaluation_"+w)
 
 for w in workers:
     os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --conf spark.executor.memory=6g \
@@ -32,6 +30,4 @@ for w in workers:
     --conf spark.master=yarn \
     --conf spark.submit.deployMode=client \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
-    --conf spark.sql.shuffle.partitions=7357 \
-    --conf spark.default.parallelism=7357 \
-    --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.knnEvaluation target/TrajSPARQL-jar-with-dependencies.jar 40000.1 604800 > knnEvaluation_"+w)
+    --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.knnEvaluation target/TrajSPARQL-jar-with-dependencies.jar 40000.1 604800 > spark_knnEvaluation_"+w)
