@@ -10,6 +10,7 @@ import org.apache.spark.sql.{Encoders, SparkSession}
 import org.apache.spark.sql.functions.rand
 import spatial.partition.{MBBindexST, MBBindexSTBlob}
 import types.Partitioner
+import utils.MbbSerialization
 
 import scala.collection.JavaConverters._
 
@@ -25,58 +26,25 @@ object rangeEvaluation {
 
     import spark.implicits._
 
-   // val trajectoryDS = spark.read.parquet("trajectories_benchmark").as[Partitioner]
+    val obj=spark.sql("select box from index_imis400_binary distribute by rand() sort by rand() limit 1").collect().head.getAs[Array[Byte]]("box")
 
-    val indexDS=spark.read.parquet("octree_traj_partitionMBBDF_binary_imis400_parquet").as[MBBindexSTBlob]
-
-    //val pid=temp.select('id).distinct().count().toInt
+    val env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
 
 
-    //val indexDS=temp.repartition(pid, $"id")
+    spark.time({
 
-    // val part=spark.read.parquet("partitions_tree_imis400_parquet").as[Array[Byte]]
+      spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
+        " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)).show()
 
-    val randomMBR=indexDS.select('box).orderBy(rand()).limit(1).collect() //todo check!
+      spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
+        " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)).collect()
 
-    val box=utils.MbbSerialization.deserialize(randomMBR.head.getAs("box"))
+      spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
+        " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)).count()
 
-    val broadcastMBR=spark.sparkContext.broadcast(box)
-
-    //val distThreshold=spark.sparkContext.broadcast(args(0))
-    //val timeThreshold=spark.sparkContext.broadcast(args(1))
-
-    //add knn parameters
-
-    //flatmap sto partition
-
-    val exec=spark.time ({
-
-
-      val arr = indexDS.flatMap(join => {
-        val b = join.tree
-
-        val bis = new ByteArrayInputStream(b.get)
-        val in = new ObjectInputStream(bis)
-        val traj_tree = in.readObject.asInstanceOf[STRtree3D]
-
-        val tree_results = traj_tree.queryIDTrajectory(broadcastMBR.value).asInstanceOf[util.List[(Long, Array[PointST])]]
-
-        tree_results.iterator().asScala
-      }).collect()
-
-
-      spark.stop()
-
-      //println(arr.sortWith(_.getDistance <= _.getDistance).head)
-
-      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
-      println("End: " + (System.currentTimeMillis() - start))
-      println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
     })
-    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
 
-    println("Sparm time command: "+exec)
-    println("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+    spark.stop()
   }
 }
 
