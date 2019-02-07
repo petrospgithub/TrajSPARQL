@@ -50,7 +50,13 @@ for d in dataset_sample:
     os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file \"/root/implementation/TrajSPARQL/config/traj_octree.properties\" --class binary.OcTreeAppBinary /root/implementation/TrajSPARQL/target/TrajSPARQL-jar-with-dependencies.jar")
     time.sleep(10)
 
-    os.system("mvn test -Dtest=CreateTables -q -DargLine=\"-Dbuckets=30\" ")
+    os.system("mvn test -Dtest=CreateTablesArr -q -DargLine=\"-Dbuckets=30\" ")
+    time.sleep(30)
+
+    os.system("mvn test -Dtest=CreateTablesBinary -q -DargLine=\"-Dbuckets=30\" ")
+    time.sleep(30)
+
+    os.system("mvn test -Dtest=CreateTableStoreTraj -q -DargLine=\"-Dbuckets=30\" ")
     time.sleep(30)
 
     os.system("mvn test -Dtest=RangeQueriesBF_arr -q >> speed_up_range_"+d)

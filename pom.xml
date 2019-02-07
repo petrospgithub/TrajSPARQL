@@ -12,6 +12,8 @@
 
     <dependencies>
 
+
+
         <!-- Hive Dependencies -->
         <dependency>
             <groupId>org.apache.hive</groupId>
