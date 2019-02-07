@@ -26,23 +26,23 @@ object rangeEvaluation {
       .getOrCreate()
 
 
-stmt.execute(" CREATE TEMPORARY FUNCTION ST_Intersects3D AS 'di.thesis.hive.stoperations.ST_Intersects3D' ")
- stmt.execute(" CREATE TEMPORARY FUNCTION MbbConstructor AS 'di.thesis.hive.mbb.MbbSTUDF' ")
-  stmt.execute(" CREATE TEMPORARY FUNCTION ST_IndexIntersects AS 'di.thesis.hive.stoperations.IndexIntersects3D' ")
+    spark.sql(" CREATE TEMPORARY FUNCTION ST_Intersects3D AS 'di.thesis.hive.stoperations.ST_Intersects3D' ")
+    spark.sql(" CREATE TEMPORARY FUNCTION MbbConstructor AS 'di.thesis.hive.mbb.MbbSTUDF' ")
+    spark.sql(" CREATE TEMPORARY FUNCTION ST_IndexIntersects AS 'di.thesis.hive.stoperations.IndexIntersects3D' ")
 
+    spark.sql(" CREATE TEMPORARY FUNCTION ST_IndexIntersectsBinary AS 'di.thesis.hive.stoperations.IndexIntersects3DBinary' ")
+    spark.sql(" CREATE TEMPORARY FUNCTION ST_Intersects3DBinary AS 'di.thesis.hive.stoperations.ST_Intersects3DBinary' ")
+    spark.sql(" CREATE TEMPORARY FUNCTION MbbConstructorBinary AS 'di.thesis.hive.mbb.MbbSTUDFBinary' ")
+    spark.sql(" CREATE TEMPORARY FUNCTION IndexIntersectsTraj AS 'di.thesis.hive.stoperations.IndexIntersectsTraj' ")
 
     spark.sparkContext.setLogLevel("WARN")
     import spark.implicits._
 
-    stmt.execute(" CREATE TEMPORARY FUNCTION ST_Intersects3DBinary AS 'di.thesis.hive.stoperations.ST_Intersects3DBinary' ")
-    stmt.execute(" CREATE TEMPORARY FUNCTION MbbConstructorBinary AS 'di.thesis.hive.mbb.MbbSTUDFBinary' ") 
-val obj=spark.sql("select box from index_imis400_binary distribute by rand() sort by rand() limit 
-1").collect().head.getAs[Array[Byte]]("box")
+
+val obj=spark.sql("select box from index_imis400_binary distribute by rand() sort by rand() limit 1").collect().head.getAs[Array[Byte]]("box")
     
-stmt.execute(" CREATE TEMPORARY FUNCTION ST_IndexIntersectsBinary AS 'di.thesis.hive.stoperations.IndexIntersects3DBinary' ")
-    val 
-env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
-    stmt.execute(" CREATE TEMPORARY FUNCTION IndexIntersectsTraj AS 'di.thesis.hive.stoperations.IndexIntersectsTraj' ")
+
+    val env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
 
     spark.time({
 
