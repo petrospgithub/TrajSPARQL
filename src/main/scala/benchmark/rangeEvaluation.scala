@@ -25,6 +25,7 @@ object rangeEvaluation {
       .enableHiveSupport()
       .getOrCreate()
 
+    spark.sparkContext.setLogLevel("WARN")
     import spark.implicits._
 
     val obj=spark.sql("select box from index_imis400_binary distribute by rand() sort by rand() limit 1").collect().head.getAs[Array[Byte]]("box")

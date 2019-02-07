@@ -48,7 +48,8 @@ for d in dataset_sample:
     os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file \"/root/implementation/TrajSPARQL/config/traj_octree.properties\" --class binary.OcTreeAppBinary /root/implementation/TrajSPARQL/target/TrajSPARQL-jar-with-dependencies.jar")
     time.sleep(10)
 
-    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --conf spark.executor.memory=6g \
+    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --jars /root/implementation/HiveTrajSPARQL/target/HiveTrajSPARQL-jar-with-dependencies.jar \
+     --conf spark.executor.memory=6g \
     --conf spark.executor.cores=1 \
     --conf spark.eventLog.enabled=true \
     --conf spark.eventLog.dir=hdfs:///user/root/spark_eventLog \
@@ -61,7 +62,8 @@ for d in dataset_sample:
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
     --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.rangeEvaluation target/TrajSPARQL-jar-with-dependencies.jar > rangeSpeedUp_spark_"+d)
 
-    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --conf spark.executor.memory=6g \
+    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --jars /root/implementation/HiveTrajSPARQL/target/HiveTrajSPARQL-jar-with-dependencies.jar \
+    --conf spark.executor.memory=6g \
     --conf spark.executor.cores=1 \
     --conf spark.eventLog.enabled=true \
     --conf spark.eventLog.dir=hdfs:///user/root/spark_eventLog \

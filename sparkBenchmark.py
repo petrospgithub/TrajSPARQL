@@ -5,7 +5,8 @@ workers=['15', '12', '9', '6', '3']
 
 for w in workers:
 
-    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --conf spark.executor.memory=6g \
+    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --jars /root/implementation/HiveTrajSPARQL/target/HiveTrajSPARQL-jar-with-dependencies.jar \
+     --conf spark.executor.memory=6g \
     --conf spark.executor.cores=1 \
     --conf spark.eventLog.enabled=true \
     --conf spark.eventLog.dir=hdfs:///user/root/spark_eventLog \
@@ -19,7 +20,8 @@ for w in workers:
     --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.rangeEvaluation target/TrajSPARQL-jar-with-dependencies.jar > spark_rangeEvaluation_"+w)
 
 for w in workers:
-    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --conf spark.executor.memory=6g \
+    os.system("/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --jars /root/implementation/HiveTrajSPARQL/target/HiveTrajSPARQL-jar-with-dependencies.jar \
+     --conf spark.executor.memory=6g \
     --conf spark.executor.cores=1 \
     --conf spark.eventLog.enabled=true \
     --conf spark.eventLog.dir=hdfs:///user/root/spark_eventLog \
