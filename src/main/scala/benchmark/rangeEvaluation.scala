@@ -39,21 +39,23 @@ object rangeEvaluation {
     import spark.implicits._
 
 
-val obj=spark.sql("select box from index_imis400_binary distribute by rand() sort by rand() limit 1").collect().head.getAs[Array[Byte]]("box")
-    
+val arr=spark.sql("select box from index_imis400_binary distribute by rand() sort by rand() limit 2").collect()//.head.getAs[Array[Byte]]("box")
+
+
+    val obj=arr(0).getAs[Array[Byte]]("box")
+    val obj2=arr(1).getAs[Array[Byte]]("box")
+
 
     val env=Some(MbbSerialization.deserialize(obj.asInstanceOf[Array[Byte]]))
+    val env2=Some(MbbSerialization.deserialize(obj2.asInstanceOf[Array[Byte]]))
 
     spark.time({
 
       spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-        " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)).show()
-
-      spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
         " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)).collect()
 
-      spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
-        " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)).count()
+      spark.sql(" SELECT IndexIntersectsTraj(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), tree, 0.1, 0.1, 0.1, 0.1, 0, 0) ".format(env2.get.getMinX, env2.get.getMaxX, env2.get.getMinY, env2.get.getMaxY, env2.get.getMinT, env2.get.getMaxT) +
+        " FROM (SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400_binary) as a JOIN index_imis400_binaryTraj as b ON (a.trajectory_id=b.id) ".format(env2.get.getMinX, env2.get.getMaxX, env2.get.getMinY, env2.get.getMaxY, env2.get.getMinT, env2.get.getMaxT)).count()
 
     })
 
