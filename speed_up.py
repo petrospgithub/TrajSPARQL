@@ -6,8 +6,7 @@ import time
 dataset_sample = ['0.2',
                   '0.4',
                   '0.6',
-                  '0.8',
-                  '1']
+                  '0.8']
 
 os.system("kill -9 $(lsof -t -i:9083)")
 
@@ -60,6 +59,9 @@ for d in dataset_sample:
     time.sleep(30)
 
     os.system("mvn test -Dtest=RangeQueriesBF_arr -q >> speed_up_range_"+d)
+    time.sleep(60)
+
+    os.system("mvn test -Dtest=RangeQueriesPID_arr -q >> speed_up_range_"+d)
     time.sleep(60)
 
     os.system("mvn test -Dtest=RangeQueriesIndex_arr -q >> speed_up_range_"+d)
