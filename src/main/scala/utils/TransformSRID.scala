@@ -16,6 +16,15 @@ object TransformSRID {
     JTS.transform(geom, transform)
   }
 
+  def to4326(geom:Geometry):Geometry={
+
+    val sourceCRS:CoordinateReferenceSystem = CRS.decode("EPSG:3857", true)
+    val targetCRS:CoordinateReferenceSystem = CRS.decode("EPSG:4326", true)
+
+    val transform:MathTransform = CRS.findMathTransform(sourceCRS, targetCRS)
+    JTS.transform(geom, transform)
+  }
+
   def toMeters(lon:Double, lat:Double):Point={
     val sourceCRS:CoordinateReferenceSystem = CRS.decode("EPSG:4326",true)
     val targetCRS:CoordinateReferenceSystem = CRS.decode("EPSG:3857", true)

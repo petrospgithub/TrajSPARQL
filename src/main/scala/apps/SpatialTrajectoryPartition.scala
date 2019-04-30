@@ -5,7 +5,6 @@ import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory}
 import com.vividsolutions.jts.io.WKTReader
 import di.thesis.indexing.spatialextension.STRtreeObjID
-import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import di.thesis.indexing.types.{EnvelopeST, GidEnvelope}
 import index.{SpatialIndex, SpatioTemporalIndex}
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -13,7 +12,7 @@ import org.datasyslab.geospark.enums.GridType
 import org.datasyslab.geospark.spatialRDD.SpatialDF
 import spatiotemporal.STGrid
 import types.{MovingObject, MovingSpatial, Trajectory, Tree}
-import utils.MbbSerialization
+import utils.{MbbSerialization, TransformSRID}
 
 
 object SpatialTrajectoryPartition {
@@ -104,7 +103,7 @@ object SpatialTrajectoryPartition {
       }
 
       val geometryFactory = new GeometryFactory()
-      val lineString = geometryFactory.createLineString(coord)
+      val lineString = TransformSRID.to4326(geometryFactory.createLineString(coord))
 
    //   if (lineString.isValid) {
         MovingSpatial(Some(row.id), Some(row.trajectory), Some(row.rowId), Some(lineString.toText))
