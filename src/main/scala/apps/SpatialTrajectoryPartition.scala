@@ -106,14 +106,22 @@ object SpatialTrajectoryPartition {
       val geometryFactory = new GeometryFactory()
       val lineString = geometryFactory.createLineString(coord)
 
-      MovingSpatial(row.id, row.trajectory, row.rowId, lineString.toText)
+   //   if (lineString.isValid) {
+        MovingSpatial(Some(row.id), Some(row.trajectory), Some(row.rowId), Some(lineString.toText))
+    //  } else {
+    //    MovingSpatial(None, None, None, None)
+     // }
+
+    }).filter(row=>{
+      val geom=new WKTReader().read(row.lineString.get)
+      geom.isValid
     })
 
 
     name match {
       case "quadtree" =>
         val rdd = moving_spatial.rdd.map(row => {
-          (new WKTReader().read(row.lineString), row.asInstanceOf[Object])
+          (new WKTReader().read(row.lineString.get), row.asInstanceOf[Object])
         })
 
         val spatialDF = new SpatialDF

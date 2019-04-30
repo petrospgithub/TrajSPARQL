@@ -106,13 +106,13 @@ object SpatialIndex {
       val spatialIndex: STRtreeObjID = new STRtreeObjID(nodeCapacity)
       //spatialIndex.setDatasetEnvelope(datasetMBB)
 
-      val geom: Geometry = new WKTReader().read(row.lineString)
+      val geom: Geometry = new WKTReader().read(row.lineString.get)
       val srid=geom.getSRID
       val boundary = geom.getEnvelopeInternal
       val envelope = new GidEnvelope(boundary)
 
       //envelope.init(boundary)
-      envelope.setGid(row.id)
+      envelope.setGid(row.id.get)
 
       spatialIndex.insert(envelope, envelope)
       var minX = boundary.getMinX
@@ -124,12 +124,12 @@ object SpatialIndex {
 
       while (i<it.length) {
         val row = it(i)
-        val geom: Geometry = new WKTReader().read(row.lineString)
+        val geom: Geometry = new WKTReader().read(row.lineString.get)
         val boundary = geom.getEnvelopeInternal
         val envelope = new GidEnvelope(boundary)
 
         //envelope.init(boundary)
-        envelope.setGid(row.id)
+        envelope.setGid(row.id.get)
 
         spatialIndex.insert(envelope, envelope)
 
@@ -201,7 +201,7 @@ object SpatialIndex {
     while (i<it.length) {
       val row = it(i)
 
-      PartitionerBlob(Some(row.id), Some(TrajectorySerialization.serialize(row.trajectory)), None, Some(row.rowId), Some(index))
+      PartitionerBlob(Some(row.id.get), Some(TrajectorySerialization.serialize(row.trajectory.get)), None, Some(row.rowId.get), Some(index))
 
       i=i+1
     }

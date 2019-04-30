@@ -2,5 +2,5 @@ package types
 
 import di.thesis.indexing.types.PointST
 
-case class MovingSpatial(id: Long, trajectory: Array[PointST], rowId:Long, lineString: String)
+case class MovingSpatial(id: Option[Long], trajectory: Option[Array[PointST]], rowId:Option[Long], lineString: Option[String])
 
