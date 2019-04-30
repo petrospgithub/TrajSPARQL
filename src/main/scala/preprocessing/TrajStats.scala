@@ -44,3 +44,13 @@ object TrajStats {
   }
 
 }
+
+/*
+
+/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file "./config/traj_grid.properties" \
+--class preprocessing.TrajStats target/TrajSPARQL-jar-with-dependencies.jar
+
+trajectories_imis400
+imis400
+
+*/

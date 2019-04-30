@@ -1,5 +1,6 @@
 package preprocessing
 
+import distance.Distance
 import org.apache.spark.sql.{Encoders, SparkSession}
 import org.apache.spark.sql.functions.{collect_list, struct}
 import org.apache.spark.sql.functions._
@@ -28,8 +29,10 @@ object trajectoryConstruction {
     val output = prop.get("spark.output")
     val path = prop.get("spark.path")
     val traj_split = prop.get("spark.traj_split").toInt
+    val traj_distance = prop.get("spark.traj_distance").toInt
 
     val broadcastSplit=spark.sparkContext.broadcast(traj_split.toDouble)
+    val broadcastDistance=spark.sparkContext.broadcast(traj_distance.toDouble)
 
     import spark.implicits._
 
@@ -51,14 +54,26 @@ object trajectoryConstruction {
       'timestamp - (lag('timestamp, 1) over windowSpec)
     )
 
-    val foo=sampling.groupByKey(row=>row.getAs[Long]("id")).flatMapGroups({
+    def dis = udf((lon:Double, lat:Double, prev_lon:Double, prev_lat:Double) => Option[Double] {
+       Distance.getHaversineDistance(prev_lat,prev_lon, lat, lon)
+    })
+
+    val fin=sampling.withColumn("distance",
+      dis(
+        'longitude, 'latitude,
+        lag('longitude, 1) over windowSpec,
+        lag('latitude, 1) over windowSpec
+      )
+    )
+
+    val foo=fin.groupByKey(row=>row.getAs[Long]("id")).flatMapGroups({
       (id, it) => {
         var traj_id:Int=1
         val ret=it.map(row=> {
-          if (row.isNullAt(4)) {
+          if (row.isNullAt(4) || row.isNullAt(5)) {
             (row.getAs[Long](0), row.getAs[Double](1), row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
           } else {
-            if (row.getAs[Long](4) <= broadcastSplit.value) {
+            if (row.getAs[Long](4) <= broadcastSplit.value && row.getAs[Long](5) <= broadcastDistance.value ) {
               (row.getAs[Long](0), row.getAs[Double](1), row.getAs[Double](2), row.getAs[Long](3), traj_id) // (""+row.getAs[Long](0)+traj_id).hashCode
             } else {
               traj_id = traj_id + 1
@@ -123,7 +138,7 @@ case class ZipPoints(id:Option[Long], longitude:Option[Double], latitude:Option[
 
 val csvDF = spark.read.option("delimiter", " ").option("header", "false").csv("imis3years_old/split_imis_3yearsaa.gz")
 
-val csvDF = spark.read.option("delimiter", " ").option("header", "false").csv("imis3years_old")
+val csvDF = spark.read.option("delimiter", " ").option("header", "false").csv("points")
 csvDF.count
 
 val pointST = csvDF.map(input => {
@@ -159,8 +174,8 @@ object Distance {
   }
 }
 
-def speed_sampling_udf = udf((lon:Double, lat:Double, t: Long, prev_lon:Double, prev_lat:Double, prev_t:Long) => Option[(Double,Long)] {
-      ( (Distance.getHaversineDistance(prev_lat,prev_lon, lat, lon) / (t - prev_t).toDouble)*1.943844492, t - prev_t)
+def speed_sampling_udf = udf((lon:Double, lat:Double, t: Long, prev_lon:Double, prev_lat:Double, prev_t:Long) => Option[(Double,Long, Double)] {
+      ( (Distance.getHaversineDistance(prev_lat,prev_lon, lat, lon) / (t - prev_t).toDouble)*1.943844492, t - prev_t, Distance.getHaversineDistance(prev_lat,prev_lon, lat, lon))
     })
 
 import org.apache.spark.sql.expressions.Window
@@ -193,6 +208,9 @@ speed_sampling.select($"speed_sampling._1").describe().show
 +-------+------------------+
 */
 
+
+
+speed_sampling.select($"speed_sampling._3").repartition(1).write.mode("overwrite").csv("distance_hist")
 
 
 val result=speed_sampling.filter(($"speed_sampling._1"<=240 && $"speed_sampling._2"<=1800) || $"speed_sampling._1".isNull)
