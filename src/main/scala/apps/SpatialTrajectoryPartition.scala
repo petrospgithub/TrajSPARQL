@@ -2,8 +2,10 @@ package apps
 
 import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
-import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory}
+import com.vividsolutions.jts.geom.{Coordinate, Envelope, GeometryFactory}
 import com.vividsolutions.jts.io.WKTReader
+import dbis.stark.STObject
+import dbis.stark.spatial.partitioner.{SpatialGridPartitioner, SpatialPartitioner}
 import di.thesis.indexing.spatialextension.STRtreeObjID
 import di.thesis.indexing.types.{EnvelopeST, GidEnvelope}
 import index.{SpatialIndex, SpatioTemporalIndex}
@@ -12,7 +14,7 @@ import org.datasyslab.geospark.enums.GridType
 import org.datasyslab.geospark.spatialRDD.SpatialDF
 import spatiotemporal.STGrid
 import types.{MovingObject, MovingSpatial, Trajectory, Tree}
-import utils.{MbbSerialization, TransformSRID}
+import utils.MbbSerialization
 
 
 object SpatialTrajectoryPartition {
@@ -64,6 +66,11 @@ object SpatialTrajectoryPartition {
     val geospark_repartition = prop.get("spark.geospark_repartition").toInt
     val geospark_sample_number = prop.get("spark.geospark_sample_number").toLong
 
+    //val sideLength = prop.get("spark.sideLength")
+
+    val partitionsPerDimension = prop.get("spark.partitionsperdimension")
+    val dimensions = 2//prop.get("spark.dimensions")
+
     /*
     val partitionsPerDimension = prop.get("spark.partitionsperdimension")
     val dimensions = prop.get("spark.dimensions")
@@ -75,7 +82,7 @@ object SpatialTrajectoryPartition {
     val path = prop.get("spark.path")
 
     val rtree_nodeCapacity=prop.get("spark.localindex_nodecapacity").toInt
-    val name="quadtree"//prop.get("spark.name")
+    val name = prop.get("spark.name")
    /*  */
 
     val broadcastrtree_nodeCapacity = spark.sparkContext.broadcast(rtree_nodeCapacity)
@@ -126,8 +133,6 @@ object SpatialTrajectoryPartition {
         val rdd = moving_spatial.rdd.map(row => {
 
           val geom=new WKTReader().read(row.lineString.get)
-          //geom.getBoundary
-
           (geom.getBoundary, row.asInstanceOf[Object])
         })
 
@@ -137,22 +142,12 @@ object SpatialTrajectoryPartition {
         spatialDF.analyze()
         spatialDF.spatialPartitioning(GridType.QUADTREE)
 
-        // val broadcastBoundary = spark.sparkContext.broadcast(spatialDF.getBoundaryEnvelope)
-
         val quadRDD = spatialDF.getSpatialPartitionedRDD.rdd.mapPartitionsWithIndex((index, it) => {
           //SpatialIndex.rtree(index, it.asInstanceOf[Iterator[MovingSpatial]].toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
           SpatialIndex.rtree(index, it.asInstanceOf[Iterator[MovingSpatial]].toArray)
         }, preservesPartitioning = true)
 
        val repartition = spark.createDataset(quadRDD)
-
-      //  val partitionMBBDF = spark.createDataFrame(mbbrdd)
-
-        //   partitionMBBDF.show()
-
-        //  partitionMBBDF.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
-        // repart_traj.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
-
 
         val partitions_counter = repartition.groupBy('pid).count()
 
@@ -201,59 +196,95 @@ object SpatialTrajectoryPartition {
           Iterator(Tree(Some(yourBytes)))
         }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_quad_binary_" + output + "_parquet")
 
-    }
-        /*
       case "grid" =>
 
         val rdd = moving_spatial.rdd.map(row => {
-          (STObject.apply(row.lineString), row)
+          (STObject.apply(row.lineString.get), row)
         })
 
         val minMax = SpatialPartitioner.getMinMax(rdd)
         val env = new Envelope(minMax._1, minMax._2, minMax._3, minMax._4)
-        val broadcastBoundary = spark.sparkContext.broadcast(env)
-
         val partitioner = new SpatialGridPartitioner(rdd, partitionsPerDimension = partitionsPerDimension.toInt, false, minMax, dimensions = dimensions.toInt)
 
-        val repart_traj = spark.createDataset(rdd.partitionBy(partitioner).values)
-
-        val mbbrdd = rdd.partitionBy(partitioner).values.mapPartitionsWithIndex((index: Int, it: Iterator[MovingSpatial]) => {
-          SpatialIndex.rtree(index, it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+        val starkRDD = rdd.partitionBy(partitioner).values.mapPartitionsWithIndex((index, it) => {
+          SpatialIndex.rtree(index, it.toArray)
         }, preservesPartitioning = true)
 
-        val partitionMBBDF = spark.createDataFrame(mbbrdd)
+        val repartition = spark.createDataset(starkRDD)//.repartition(12500)
 
-        //partitionMBBDF.show()
+        val partitions_counter = repartition.groupBy('pid).count()
 
-        partitionMBBDF.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
-        repart_traj.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
+        partitions_counter.write.csv("stark_binary_traj_partitions_counter_" + output + "_" + geospark_repartition + "_" + geospark_sample_number)
 
 
-      case "bsp" =>
-
-        val rdd = moving_spatial.rdd.map(row => {
-          (STObject.apply(row.lineString), row)
+        val partitionMBB = repartition.groupByKey(p => p.id).mapGroups({
+          (id, it) => {
+            SpatioTemporalIndex.rtreeblob_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+          }
         })
 
-        val partitioner = new BSPartitioner(rdd, sideLength = sideLength.toInt, maxCostPerPartition = maxCostPerPartition.toInt)
-        val env = new Envelope(partitioner.minX, partitioner.maxX, partitioner.minY, partitioner.maxY)
-        val broadcastBoundary = spark.sparkContext.broadcast(env)
+        partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("stark_traj_partitionMBBDF_binary_" + output + "_parquet")
+        repartition.write.option("compression", "snappy").mode("overwrite").parquet("stark_traj_repartition_binary_" + output + "_parquet")
 
-        val repart_traj = spark.createDataset(rdd.partitionBy(partitioner).values)
 
-        val mbbrdd = rdd.partitionBy(partitioner).values.mapPartitionsWithIndex((index: Int, it: Iterator[MovingSpatial]) => {
-          SpatialIndex.rtree(index, it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-        }, preservesPartitioning = true)
+        partitionMBB.repartition(1).mapPartitions(f => {
+          val rtree3D: STRtreeObjID = new STRtreeObjID()
 
-        val partitionMBBDF = spark.createDataFrame(mbbrdd)
+          rtree3D.setDatasetEnvelope(broadcastBoundary.value.jtsGeom().getEnvelopeInternal)
 
-        //partitionMBBDF.show()
+          while (f.hasNext) {
+            val temp = f.next()
+            val temp_mbbst = MbbSerialization.deserialize(temp.box.get)
+            val envelope:GidEnvelope = new GidEnvelope(temp_mbbst.getMinX, temp_mbbst.getMaxX, temp_mbbst.getMinY, temp_mbbst.getMaxY)
 
-        partitionMBBDF.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
-        repart_traj.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
+            envelope.setGid(temp.id.get)
 
+            rtree3D.insert(envelope, envelope)
+          }
+
+          rtree3D.build()
+
+          val bos = new ByteArrayOutputStream()
+
+          val out = new ObjectOutputStream(bos)
+          out.writeObject(rtree3D)
+          out.flush()
+          val yourBytes = bos.toByteArray.clone()
+
+          out.close()
+
+          Iterator(Tree(Some(yourBytes)))
+        }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_stark_binary_" + output + "_parquet")
+
+
+
+      /*
+    case "bsp" =>
+
+      val rdd = moving_spatial.rdd.map(row => {
+        (STObject.apply(row.lineString.get), row)
+      })
+
+      val partitioner = new BSPartitioner(rdd, 1, 1, true, null, null)
+
+      val env = new Envelope(partitioner.minX, partitioner.maxX, partitioner.minY, partitioner.maxY)
+      val broadcastBoundary = spark.sparkContext.broadcast(env)
+
+      val repart_traj = spark.createDataset(rdd.partitionBy(partitioner).values)
+
+      val mbbrdd = rdd.partitionBy(partitioner).values.mapPartitionsWithIndex((index: Int, it: Iterator[MovingSpatial]) => {
+        SpatialIndex.rtree(index, it.toArray, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+      }, preservesPartitioning = true)
+
+      val partitionMBBDF = spark.createDataFrame(mbbrdd)
+
+      //partitionMBBDF.show()
+
+      partitionMBBDF.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
+      repart_traj.na.drop.write.option("compression", "snappy").mode("overwrite").parquet("geospark_" + args(0) + "_" + output + "_parquet")
+    */
     }
-*/
+
     spark.close()
   }
 }
