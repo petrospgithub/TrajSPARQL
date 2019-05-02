@@ -10,10 +10,10 @@ import _root_.types._
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import utils.ArraySearch
 
-object TrajBSP {
+object SpatialTraj {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
-      .appName("TrajectoryBSP")//.master("local[*]")
+      .appName("SpatialTraj")//.master("local[*]")
       .getOrCreate()
     /*
         val input: InputStream = new FileInputStream(System.getProperty("user.dir") + "/config/traj_bsp.properties")
@@ -75,16 +75,16 @@ object TrajBSP {
       val cellId = TrajectoryHistogram.getCellId(pointST, broadmbbST.value, broadsideLength.value, broadsideLength.value, broadnumXcells.value)
       val spatial = broadGrid.value.filter(_.id == cellId)
 
-      val target = ArraySearch.binarySearchIterative(spatial, pointST.getTimestamp)
-      val pid = "" + cellId + target //.replace("-", "")
+      //val target = ArraySearch.binarySearchIterative(spatial, pointST.getTimestamp)
+     // val pid = "" + cellId + target //.replace("-", "")
 
 
       mo match {
         case _: Trajectory =>
-          Partitioner(Some(mo.id), Some(mo.trajectory), None, Some(mo.rowId), Some(pid.hashCode))
+          Partitioner(Some(mo.id), Some(mo.trajectory), None, Some(mo.rowId), Some(cellId.hashCode))
 
         case _: Segment =>
-          Partitioner(Some(mo.id), Some(mo.trajectory), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(pid.hashCode))
+          Partitioner(Some(mo.id), Some(mo.trajectory), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(cellId.hashCode))
       }
     })
 
@@ -140,6 +140,6 @@ object TrajBSP {
 /*
 TODO
 
-/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file "/root/implementation/TrajSPARQL/config/traj_bsp.properties" --class apps.TrajBSP /root/implementation/TrajSPARQL/target/TrajSPARQL-jar-with-dependencies.jar
+/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --properties-file "/root/implementation/TrajSPARQL/config/traj_bsp.properties" --class apps.SpatialTraj /root/implementation/TrajSPARQL/target/TrajSPARQL-jar-with-dependencies.jar
 
 */
