@@ -8,6 +8,7 @@ import org.apache.spark.sql._
 import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
 import _root_.types._
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
+import org.apache.spark.storage.StorageLevel
 import utils.ArraySearch
 
 object SpatialTraj {
@@ -86,7 +87,7 @@ object SpatialTraj {
         case _: Segment =>
           Partitioner(Some(mo.id), Some(mo.trajectory), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(cellId.hashCode))
       }
-    })
+    }).persist(StorageLevel.MEMORY_AND_DISK_2)
 
     val partitions_counter = repartition.groupBy('pid).count()
 
@@ -98,7 +99,7 @@ object SpatialTraj {
       (id, it) => {
         SpatioTemporalIndex.rtree(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
       }
-    })
+    }).persist(StorageLevel.MEMORY_AND_DISK_2)
 
     partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
