@@ -44,11 +44,11 @@ object rangeSpatial {
     spark.time({
 
      spark.sql(" SELECT * FROM " +
-        "(SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400) as b INNER JOIN trajectories_imis400_binary_pid as a ON (b.trajectory_id=a.pid) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
+        "(SELECT SP_TrajSPMBR(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400) as b INNER JOIN trajectories_imis400_binary_pid as a ON (b.trajectory_id=a.pid) ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT) +
         " WHERE ST_Intersects3DBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  ".format(env.get.getMinX, env.get.getMaxX, env.get.getMinY, env.get.getMaxY, env.get.getMinT, env.get.getMaxT)).collect()
 
       spark.sql( " SELECT * FROM " +
-        "(SELECT ST_IndexIntersectsBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400) as b INNER JOIN trajectories_imis400_binary_pid as a ON (b.trajectory_id=a.pid) ".format(env2.get.getMinX, env2.get.getMaxX, env2.get.getMinY, env2.get.getMaxY, env2.get.getMinT, env2.get.getMaxT) +
+        "(SELECT SP_TrajSPMBR(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ),tree, 0.1, 0.1, 0.1, 0.1, 0, 0) FROM partition_index_imis400) as b INNER JOIN trajectories_imis400_binary_pid as a ON (b.trajectory_id=a.pid) ".format(env2.get.getMinX, env2.get.getMaxX, env2.get.getMinY, env2.get.getMaxY, env2.get.getMinT, env2.get.getMaxT) +
         " WHERE ST_Intersects3DBinary(MbbConstructorBinary( %s, %s, %s, %s, CAST(%s as BIGINT), CAST(%s as BIGINT) ), trajectory, 0.1, 0.1, 0.1, 0.1, 0, 0)  ".format(env2.get.getMinX, env2.get.getMaxX, env2.get.getMinY, env2.get.getMaxY, env2.get.getMinT, env2.get.getMaxT)).collect()
 
 
