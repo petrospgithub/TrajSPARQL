@@ -13,7 +13,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 import org.datasyslab.geospark.enums.GridType
 import org.datasyslab.geospark.spatialRDD.SpatialDF
 import spatiotemporal.STGrid
-import types.{MovingObject, MovingSpatial, Trajectory, Tree}
+import types._
 import utils.MbbSerialization
 
 
@@ -156,8 +156,8 @@ object SpatialTrajectoryPartition {
 
         val partitionMBB = repartition.groupByKey(p => p.id).mapGroups({
           (id, it) => {
-            SpatioTemporalIndex.rtreeblob_mbb_spatial(id.get, it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-            //SpatioTemporalIndex.rtree_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+            //SpatioTemporalIndex.rtreeblob_mbb_spatial(id.get, it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+            SpatioTemporalIndex.rtree_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
           }
         })
 
@@ -172,7 +172,7 @@ object SpatialTrajectoryPartition {
 
           while (f.hasNext) {
             val temp = f.next()
-            val temp_mbbst = MbbSerialization.deserialize(temp.box.get)
+            val temp_mbbst = temp.box.get
 
             //val envelope = new EnvelopeST(temp_mbbst.getMinX, temp_mbbst.getMaxX, temp_mbbst.getMinY, temp_mbbst.getMaxY, temp_mbbst.getMinT, temp_mbbst.getMaxT)
 
