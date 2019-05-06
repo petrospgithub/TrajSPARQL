@@ -74,7 +74,7 @@ object SpatialTraj {
       val pointST: PointST = mo.getMean()
 
       val cellId = TrajectoryHistogram.getCellId(pointST, broadmbbST.value, broadsideLength.value, broadsideLength.value, broadnumXcells.value)
-      val spatial = broadGrid.value.filter(_.id == cellId)
+      //val spatial = broadGrid.value.filter(_.id == cellId)
 
       //val target = ArraySearch.binarySearchIterative(spatial, pointST.getTimestamp)
      // val pid = "" + cellId + target //.replace("-", "")
@@ -87,7 +87,7 @@ object SpatialTraj {
         case _: Segment =>
           Partitioner(Some(mo.id), Some(mo.trajectory), Some(mo.asInstanceOf[Segment].traj_id), Some(mo.rowId), Some(cellId.hashCode))
       }
-    }).persist(StorageLevel.MEMORY_AND_DISK_2)
+    })//.persist(StorageLevel.MEMORY_AND_DISK_2)
 
     val partitions_counter = repartition.groupBy('pid).count()
 
@@ -97,9 +97,10 @@ object SpatialTraj {
 
     val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({
       (id, it) => {
-        SpatioTemporalIndex.rtree(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+        //SpatioTemporalIndex.rtreeblob_mbb_spatial(id.get, it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+        SpatioTemporalIndex.rtree_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
       }
-    }).persist(StorageLevel.MEMORY_AND_DISK_2)
+    })//.persist(StorageLevel.MEMORY_AND_DISK_2)
 
     partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("bsp_partitionMBBDF_" + output + "_parquet")
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
