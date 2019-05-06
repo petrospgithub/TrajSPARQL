@@ -23,7 +23,7 @@ object SpatialIndex {
       val index=row.getAs[Int](row.fieldIndex("partitionid"))
 
       val spatialIndex: STRtreeObjID = new STRtreeObjID(nodeCapacity)
-      spatialIndex.setDatasetEnvelope(datasetMBB)
+      //spatialIndex.setDatasetEnvelope(datasetMBB)
 
       val geom: Geometry = ReadPostgresGeom.hex2Geom(row.get(row.fieldIndex("geom")).toString)
       val srid=geom.getSRID
