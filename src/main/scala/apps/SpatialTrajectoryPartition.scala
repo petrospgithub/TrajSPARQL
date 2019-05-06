@@ -156,7 +156,8 @@ object SpatialTrajectoryPartition {
 
         val partitionMBB = repartition.groupByKey(p => p.id).mapGroups({
           (id, it) => {
-            SpatioTemporalIndex.rtreeblob_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+            SpatioTemporalIndex.rtreeblob_mbb_spatial(id.get, it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+            //SpatioTemporalIndex.rtree_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
           }
         })
 
@@ -196,6 +197,7 @@ object SpatialTrajectoryPartition {
           Iterator(Tree(Some(yourBytes)))
         }).write.option("compression", "snappy").mode("overwrite").parquet("partitions_quad_binary_" + output + "_parquet")
 
+
       case "grid" =>
 
         val rdd = moving_spatial.rdd.map(row => {
@@ -219,9 +221,12 @@ object SpatialTrajectoryPartition {
 
         val partitionMBB = repartition.groupByKey(p => p.id).mapGroups({
           (id, it) => {
-            SpatioTemporalIndex.rtreeblob_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+            SpatioTemporalIndex.rtreeblob_mbb_spatial(id.get, it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+            //SpatioTemporalIndex.rtree_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+
           }
         })
+
 
         partitionMBB.write.option("compression", "snappy").mode("overwrite").parquet("stark_traj_partitionMBBDF_binary_" + output + "_parquet")
         repartition.write.option("compression", "snappy").mode("overwrite").parquet("stark_traj_repartition_binary_" + output + "_parquet")

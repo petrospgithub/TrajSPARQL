@@ -9,7 +9,7 @@ import di.thesis.indexing.types.GidEnvelope
 import org.apache.spark.sql.Row
 import org.geotools.geometry.jts.JTS
 import spatial.partition.MBBindexSpatial
-import types.{MovingSpatial, PartitionerBlob}
+import types.{MovingSpatial, Partitioner, PartitionerBlob}
 import utils.{OGCtrasnformations, ReadPostgresGeom, TrajectorySerialization}
 
 import scala.collection.mutable.ArrayBuffer
@@ -170,7 +170,7 @@ object SpatialIndex {
   //  }
   }
 
-  def rtree(index:Int, it: Array[MovingSpatial]): Iterator[PartitionerBlob] = {
+  def rtree(index:Int, it: Array[MovingSpatial]): Iterator[Partitioner] = {
 
  //   PartitionerBlob(Some(mo.id), Some(TrajectorySerialization.serialize(mo.trajectory)), None, Some(mo.rowId), Some(partition_id))
 
@@ -196,12 +196,12 @@ object SpatialIndex {
 
     var i=0
 
-    val buffer=new ArrayBuffer[PartitionerBlob]()
+    val buffer=new ArrayBuffer[Partitioner]()
 
     while (i<it.length) {
       val row = it(i)
 
-      PartitionerBlob(Some(row.id.get), Some(TrajectorySerialization.serialize(row.trajectory.get)), None, Some(row.rowId.get), Some(index))
+      buffer.append(Partitioner(Some(row.id.get), row.trajectory, None, row.rowId, Some(index)))
 
       i=i+1
     }
