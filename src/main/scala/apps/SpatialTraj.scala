@@ -9,7 +9,7 @@ import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
 import _root_.types._
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import org.apache.spark.storage.StorageLevel
-import utils.ArraySearch
+import utils.{ArraySearch, MbbSerialization}
 
 object SpatialTraj {
   def main(args: Array[String]): Unit = {
@@ -97,8 +97,8 @@ object SpatialTraj {
 
     val partitionMBB=repartition.groupByKey(p=>p.pid).mapGroups({
       (id, it) => {
-        //SpatioTemporalIndex.rtreeblob_mbb_spatial(id.get, it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
-        SpatioTemporalIndex.rtree_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+        SpatioTemporalIndex.rtreeblob_mbb_spatial(id.get, it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
+        //SpatioTemporalIndex.rtree_store_traj(it, broadcastBoundary.value, broadcastrtree_nodeCapacity.value)
       }
     })//.persist(StorageLevel.MEMORY_AND_DISK_2)
 
@@ -112,7 +112,7 @@ object SpatialTraj {
 
       while (f.hasNext) {
         val temp=f.next()
-        val temp_mbbst = temp.box.get
+        val temp_mbbst = MbbSerialization.deserialize(temp.box.get)
 
         val envelope=new EnvelopeST(temp_mbbst.getMinX, temp_mbbst.getMaxX, temp_mbbst.getMinY, temp_mbbst.getMaxY, temp_mbbst.getMinT, temp_mbbst.getMaxT)
         envelope.setGid(temp.id.get)
