@@ -2,11 +2,12 @@ package apps
 
 import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
-import di.thesis.indexing.types.{EnvelopeST, PointST}
+import di.thesis.indexing.types.{EnvelopeST, GidEnvelope, PointST}
 import index.SpatioTemporalIndex
 import org.apache.spark.sql._
 import spatiotemporal.{STGrid, TrajBSPartitioner, TrajectoryHistogram}
 import _root_.types._
+import di.thesis.indexing.spatialextension.STRtreeObjID
 import di.thesis.indexing.spatiotemporaljts.STRtree3D
 import org.apache.spark.storage.StorageLevel
 import utils.{ArraySearch, MbbSerialization}
@@ -106,17 +107,18 @@ object SpatialTraj {
     repartition.write.option("compression", "snappy").mode("overwrite").parquet("bsp_repartition_" + output + "_parquet")
 
     partitionMBB.repartition(1).mapPartitions(f=>{
-      val rtree3D: STRtree3D = new STRtree3D()
+      val rtree3D: STRtreeObjID = new STRtreeObjID()
 
-      rtree3D.setDatasetMBB(broadcastBoundary.value)
+      //rtree3D.setDatasetEnvelope(broadcastBoundary.value.jtsGeom().getEnvelopeInternal)
 
       while (f.hasNext) {
-        val temp=f.next()
+        val temp = f.next()
         val temp_mbbst = MbbSerialization.deserialize(temp.box.get)
+        val envelope:GidEnvelope = new GidEnvelope(temp_mbbst.getMinX, temp_mbbst.getMaxX, temp_mbbst.getMinY, temp_mbbst.getMaxY)
 
-        val envelope=new EnvelopeST(temp_mbbst.getMinX, temp_mbbst.getMaxX, temp_mbbst.getMinY, temp_mbbst.getMaxY, temp_mbbst.getMinT, temp_mbbst.getMaxT)
         envelope.setGid(temp.id.get)
-        rtree3D.insert(envelope)
+
+        rtree3D.insert(envelope, envelope)
       }
 
       rtree3D.build()

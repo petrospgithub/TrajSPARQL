@@ -168,7 +168,7 @@ object SpatialTrajectoryPartition {
         partitionMBB.repartition(1).mapPartitions(f => {
           val rtree3D: STRtreeObjID = new STRtreeObjID()
 
-          rtree3D.setDatasetEnvelope(broadcastBoundary.value.jtsGeom().getEnvelopeInternal)
+       //  rtree3D.setDatasetEnvelope(broadcastBoundary.value.jtsGeom().getEnvelopeInternal)
 
           while (f.hasNext) {
             val temp = f.next()
@@ -235,7 +235,7 @@ object SpatialTrajectoryPartition {
         partitionMBB.repartition(1).mapPartitions(f => {
           val rtree3D: STRtreeObjID = new STRtreeObjID()
 
-          rtree3D.setDatasetEnvelope(broadcastBoundary.value.jtsGeom().getEnvelopeInternal)
+          //rtree3D.setDatasetEnvelope(broadcastBoundary.value.jtsGeom().getEnvelopeInternal)
 
           while (f.hasNext) {
             val temp = f.next()
