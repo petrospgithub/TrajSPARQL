@@ -57,3 +57,24 @@ object rangeSpatial {
     spark.stop()
   }
 }
+
+
+/*
+TODO
+
+/root/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --jars /root/implementation/HiveTrajSPARQL/target/HiveTrajSPARQL-jar-with-dependencies.jar \
+     --conf spark.executor.memory=6g \
+    --conf spark.executor.cores=1 \
+    --conf spark.eventLog.enabled=true \
+    --conf spark.eventLog.dir=hdfs:///user/root/spark_eventLog \
+    --conf spark.executor.instances=15
+    --conf spark.driver.memory=6g \
+    --conf spark.driver.cores=6 \
+    --conf spark.executor.memoryOverhead=1g \
+    --conf spark.master=yarn \
+    --conf spark.submit.deployMode=client \
+    --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+    --conf spark.yarn.archive=hdfs:///user/root/spark230_jars/spark230.tar.gz --class benchmark.rangeSpatial target/TrajSPARQL-jar-with-dependencies.jar > spark_spatial_15
+
+
+ */

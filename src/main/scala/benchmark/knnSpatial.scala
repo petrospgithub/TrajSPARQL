@@ -35,7 +35,7 @@ object knnSpatial {
     spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedListBinary AS 'di.thesis.hive.similarity.ToOrderedListBinary'")
     spark.sql(" CREATE TEMPORARY FUNCTION ToOrderedListBinarySpark AS 'di.thesis.hive.similarity.ToOrderedListBinarySpark'")
 
-    val arr=spark.sql("select rowId from trajectories_imis400_binary distribute by rand() sort by rand() limit 2").collect()
+    val arr=spark.sql("select rowId from trajectories_imis400_pid distribute by rand() sort by rand() limit 2").collect()
 
     val id1=arr(0).getLong(0)
     val id2=arr(1).getLong(0)
